@@ -1,12 +1,8 @@
-import asyncio
-import os
-from io import TextIOWrapper
 
-from django.core.management.base import BaseCommand
-from asgiref.sync import async_to_sync
 import anyio
-from mcp import ClientSession, StdioServerParameters, stdio_server
-from mcp.client.stdio import stdio_client
+from asgiref.sync import async_to_sync
+from django.core.management.base import BaseCommand
+from mcp import ClientSession
 
 from mcp_server import mcp_server
 

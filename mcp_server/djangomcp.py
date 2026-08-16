@@ -4,25 +4,25 @@ import inspect
 import json
 import logging
 from importlib import import_module
-from io import BytesIO
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Type, Callable
 
-from asgiref.sync import sync_to_async, async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import QuerySet
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 from mcp.server import FastMCP
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
-from rest_framework.mixins import CreateModelMixin, UpdateModelMixin, DestroyModelMixin, ListModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.serializers import Serializer
 from rest_framework.test import APIRequestFactory
 from starlette.datastructures import Headers
-from starlette.types import Scope, Receive, Send
-
-if TYPE_CHECKING:
-    pass
+from starlette.types import Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class DjangoMCP(FastMCP):
 
     def register_drf_create_tool(
             self,
-            view_class: type("GenericAPIView"),
+            view_class: str,
             name=None,
             instructions=None,
             body_schema: dict | None = None,
@@ -295,7 +295,7 @@ class DjangoMCP(FastMCP):
 
     def register_drf_list_tool(
             self,
-            view_class: type("GenericAPIView"),
+            view_class: str,
             name: str | None = None,
             instructions: str | None = None,
             actions: dict | None = None,
@@ -314,7 +314,7 @@ class DjangoMCP(FastMCP):
 
     def register_drf_update_tool(
             self,
-            view_class: type("GenericAPIView"),
+            view_class: str,
             name: str | None = None,
             instructions: str | None = None,
             body_schema: dict | None = None,
@@ -368,7 +368,7 @@ class DjangoMCP(FastMCP):
 
     def register_drf_destroy_tool(
             self,
-            view_class: type("GenericAPIView"),
+            view_class: str,
             name: str | None = None,
             instructions: str | None = None,
             actions: dict | None = None,
@@ -498,7 +498,7 @@ class _DRFRequestWrapper(HttpRequest):
         return request
 
 class BaseAPIViewCallerTool:
-    view: Type["APIView"]
+    view: type[APIView]
 
     def __init__(self, view_class, **kwargs):
         self.view = view_class.as_view(**kwargs)

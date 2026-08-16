@@ -1,0 +1,22 @@
+{
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "always",
+            "source.unusedImports": "always",
+            "source.sort.json": "always",
+            "source.organizeImports.ruff": "always"
+        }
+    },
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.pytestArgs": [
+        ".",
+        "-v",
+        "--cov=.",
+        "--cov-report=markdown:django_mcp_plus_coverage.md",
+        "--cov-report=html:django_mcp_plus_coverage",
+        "--report-log=reports/reports.json",
+        "-s",
+    ]
+}

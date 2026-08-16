@@ -15,13 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from django.utils.module_loading import import_string
 from rest_framework.permissions import IsAuthenticated
 
 from mcp_server.views import MCPServerStreamableHttpView
-
 
 # Register MCP Server View and bypass default DRF default permission / authentication classes
 base_url = getattr(settings, "DJANGO_MCP_ENDPOINT", "mcp")

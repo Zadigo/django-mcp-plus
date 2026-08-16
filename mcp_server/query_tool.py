@@ -1,18 +1,28 @@
 import base64
-import csv
-import io
-import json
 import logging
-from random import randint
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db import models
-from django.db.models import Q, QuerySet, Count, Sum, Model
-from django.db.models import CharField, TextField
-from django.db.models import Avg, Max, Min
+from django.db.models import (
+    Avg,
+    CharField,
+    Count,
+    Max,
+    Min,
+    Model,
+    Q,
+    QuerySet,
+    Sum,
+    TextField,
+)
 from django.utils.module_loading import import_string
-from mcp.types import EmbeddedResource, TextResourceContents, BlobResourceContents, TextContent
+from mcp.types import (
+    BlobResourceContents,
+    EmbeddedResource,
+    TextContent,
+    TextResourceContents,
+)
 from rest_framework.renderers import BaseRenderer
 
 logger = logging.getLogger(__name__)
@@ -102,7 +112,7 @@ def generate_json_schema(model, fields=None, exclude=None):
                 prop["enum"] = [choice[0] for choice in field.choices]
 
                 # Build display labels
-                choice_desc = ", ".join(f"{repr(val)} = {label}" for val, label in field.choices)
+                choice_desc = ", ".join(f"{val!r} = {label}" for val, label in field.choices)
 
                 # Append to existing or new description
                 if "description" in prop:
@@ -488,7 +498,7 @@ class ModelQueryToolset(metaclass=ModelQueryToolsetMeta):
     Base class for models that can be queried using the MCP QueryTool.
     """
 
-    mcp_server: 'DjangoMCP' = None
+    mcp_server: DjangoMCP = None
     "The server to use, if not set, the global one will be used."
 
     model: type(Model) = None
@@ -696,7 +706,7 @@ Documents conform the following JSON Schema
 
 _output_formats=None
 
-def init(global_mcp_server : 'DjangoMCP'):
+def init(global_mcp_server : DjangoMCP):
     global _output_formats
     renderers_classes = (import_string(renderer_class) for renderer_class in
                            getattr(settings, "DJANGO_MCP_OUTPUT_RENDERER_CLASSES", ["rest_framework.renderers.JSONRenderer"]))

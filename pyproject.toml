@@ -1,42 +1,81 @@
 [project]
-name = "django-mcp-server"
-version = "0.5.6"
+name = "django-mcp-plus"
+version = "0.1.0"
+requires-python = ">=3.14"
 description = "Django MCP Server is a Django extensions to easily enable AI Agents to interact with Django Apps through the Model Context Protocol it works equally well on WSGI and ASGI"
-authors = [
-    {name = "Omar BENHAMID",email = "omar.benhamid@smart-gts.com"}
-]
 license = {text = "MIT"}
 readme = "README.md"
-homepage = "https://github.com/omarbenhamid/django-mcp-server"
-repository = "https://github.com/omarbenhamid/django-mcp-server"
-documentation = "https://github.com/omarbenhamid/django-mcp-server"
 keywords = ["django", "mcp", "model context protocol", "tools"]
-requires-python = ">=3.10"
 dependencies = [
-    "mcp (>=1.8.0)",
-    "django (>=4.0)",
-    "djangorestframework (>=3.15.0)",
-    "inflection (>=0.5.1,<0.6.0)",
-    "uritemplate (>=4.1.1,<5.0.0)",
-]
-classifiers = [
-    "Framework :: Django",
-    "Framework :: Django :: 4",
-    "Framework :: Django :: 5",
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "django>=6.1",
+    "djangorestframework>=3.18.0",
+    "mcp>=2.0.0",
 ]
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "factory-boy>=3.3.3",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pytest-datafiles>=3.0.1",
+    "pytest-django>=4.14.0",
+    "pytest-env>=1.7.0",
+    "pytest-reportlog>=1.0.0",
+    "pytest-timeout>=2.5.0",
+    "ruff>=0.16.3",
+]
 
-[[tool.poetry.packages]]
-include = "mcp_server"
-[tool.poetry.group.dev.dependencies]
-djangorestframework = "^3.16.0"
-pytest-django = "^4.11.1"
-uvicorn = "^0.34.3"
-djangorestframework-csv = "^3.0.2"
-drf-excel = "^2.5.3"
+[tool.pyright]
+typeCheckingMode = "off"
+reportMissingImports = true
+reportUntypedBaseClass = true
 
+[tool.pytest]
+testpaths = ["tests"]
+timeout="5000"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "api: marks tests as api tests",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.pytest_env]
+env_files = [".env", ".env.test"]
+
+[tool.autopep8]
+max_line_length = 120
+in-place = true
+recursive = true
+aggressive = 3
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
+
+[tool.coverage.run]
+omit = [
+    "manage.py",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/typings.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.uv.build-backend]
+source-exclude = [
+    "tests/**",
+    "docs/**",
+    "*.log",
+    "**/.DS_Store",
+]
