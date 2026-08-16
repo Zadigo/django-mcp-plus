@@ -9,6 +9,7 @@ keywords = ["django", "mcp", "model context protocol", "tools"]
 dependencies = [
     "django>=6.1",
     "djangorestframework>=3.18.0",
+    "httpx2>=2.10.0",
     "mcp>=2.0.0",
 ]
 
@@ -32,7 +33,7 @@ reportUntypedBaseClass = true
 
 [tool.pytest]
 testpaths = ["tests"]
-timeout="5000"
+timeout= 300
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "api: marks tests as api tests",
@@ -78,4 +79,5 @@ source-exclude = [
     "docs/**",
     "*.log",
     "**/.DS_Store",
+    'conftest.py',
 ]

@@ -3,12 +3,10 @@ from typing import Any
 import httpx2
 from mcp.server import MCPServer
 
-# Initialize FastMCP server
-mcp = MCPServer("weather")
+mcp = MCPServer('weather')
 
-
-# Constants
 NWS_API_BASE = "https://api.weather.gov"
+
 USER_AGENT = "weather-app/1.0"
 
 
@@ -30,12 +28,12 @@ def format_alert(feature: dict) -> str:
     """Format an alert feature into a readable string."""
     props = feature["properties"]
     return f"""
-Event: {props.get('event', 'Unknown')}
-Area: {props.get('areaDesc', 'Unknown')}
-Severity: {props.get('severity', 'Unknown')}
-Description: {props.get('description', 'No description available')}
-Instructions: {props.get('instruction', 'No specific instructions provided')}
-"""
+    Event: {props.get('event', 'Unknown')}
+    Area: {props.get('areaDesc', 'Unknown')}
+    Severity: {props.get('severity', 'Unknown')}
+    Description: {props.get('description', 'No description available')}
+    Instructions: {props.get('instruction', 'No specific instructions provided')}
+    """
 
 @mcp.tool()
 async def get_alerts(state: str) -> str:
@@ -55,6 +53,7 @@ async def get_alerts(state: str) -> str:
 
     alerts = [format_alert(feature) for feature in data["features"]]
     return "\n---\n".join(alerts)
+
 
 @mcp.tool()
 async def get_forecast(latitude: float, longitude: float) -> str:
@@ -83,19 +82,18 @@ async def get_forecast(latitude: float, longitude: float) -> str:
     forecasts = []
     for period in periods[:5]:  # Only show next 5 periods
         forecast = f"""
-{period['name']}:
-Temperature: {period['temperature']}°{period['temperatureUnit']}
-Wind: {period['windSpeed']} {period['windDirection']}
-Forecast: {period['detailedForecast']}
-"""
+        {period['name']}:
+        Temperature: {period['temperature']}°{period['temperatureUnit']}
+        Wind: {period['windSpeed']} {period['windDirection']}
+        Forecast: {period['detailedForecast']}
+        """
         forecasts.append(forecast)
 
     return "\n---\n".join(forecasts)
 
-if __name__ == "__main__":
-    # Initialize and run the server
-    #mcp.run(transport='sse')
-    # mcp.run(transport='stdio')
-    mcp.settings.port = 8002
-    mcp.settings.json_response = True
-    mcp.run(transport='streamable-http')
+
+if __name__ == '__main__':
+    try:
+        mcp.run(port=8002, json_response=True, transport='streamable-http')
+    except KeyboardInterrupt:
+        print("MCP server stopped by user.")

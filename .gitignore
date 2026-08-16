@@ -181,3 +181,6 @@ contrib
 
 # Claude local settings
 Claude.local.md
+
+*coverage*
+reports/*
