@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
-from mcp.server import FastMCP
+from mcp.server import MCPServer
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -161,8 +161,7 @@ MCP_SESSION_ID_HDR = "Mcp-Session-Id"
 
 # FIXME: shall I reimplement the necessary without the
 # Stuff pulled to support embedded server ?
-class DjangoMCP(FastMCP):
-
+class DjangoMCP(MCPServer):
     def __init__(self, name=None, instructions=None, stateless=False):
         # Prevent extra server settings as we do not use the embedded server
         super().__init__(name or "django_mcp_server", instructions)
@@ -496,6 +495,7 @@ class _DRFRequestWrapper(HttpRequest):
             request.session = mcp_request.session
 
         return request
+
 
 class BaseAPIViewCallerTool:
     view: type[APIView]
