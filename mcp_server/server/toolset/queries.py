@@ -18,7 +18,7 @@ class AbstractToolset(type):
 
 
 
-class ModelQueryToolset(metaclass=AbstractToolset):
+class ModelQueryToolset[T](metaclass=AbstractToolset):
     """A class that provides a set of tools to to create tools that can 
     be used by the MCP server. This class is meant to be subclassed and 
     extended with additional tools::
