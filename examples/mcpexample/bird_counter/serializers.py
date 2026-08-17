@@ -7,4 +7,4 @@ class BirdSerializer(ModelSerializer):
     """Serializer for the Bird model"""
     class Meta:
         model = Bird
-        fields = ['species', 'count']
+        fields = ('species', 'count')
