@@ -6,8 +6,7 @@ from django.db.models import QuerySet
 
 if TYPE_CHECKING:
     from mcp_server.server.base import DjangoMcpServer
-    from mcp_server.server.toolset.methods import MCPToolset
-    from mcp_server.server.toolset.queries import ModelQueryToolset
+    from mcp_server.server.toolset.mixins import MCPToolset, ModelQueryToolset
 
 
 type TypeDjangoMcpServer = 'DjangoMcpServer'
@@ -15,3 +14,7 @@ type TypeDjangoMcpServer = 'DjangoMcpServer'
 type TypeToolsetMethod = Callable[..., QuerySet | pydantic.BaseModel | Sequence[pydantic.BaseModel] | None]
 
 type TypeToolset = MCPToolset | ModelQueryToolset
+
+type TypeMcpToolset = MCPToolset
+
+type TypeModelToolset = ModelQueryToolset

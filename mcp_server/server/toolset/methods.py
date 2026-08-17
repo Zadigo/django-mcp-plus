@@ -1,19 +1,16 @@
 import contextvars
 import functools
-import inspect
 import logging
 from collections.abc import Coroutine, Sequence
 from types import SimpleNamespace
-from typing import Any, ClassVar
+from typing import Any
 
 import pydantic
 from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
-from mcp import Tool
-from mcp.server.mcpserver.tools.tool_manager import ToolManager
 from rest_framework.serializers import Serializer
 
-from mcp_server.typings import TypeDjangoMcpServer, TypeToolsetMethod
+from mcp_server.typings import TypeMcpToolset, TypeToolsetMethod
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,7 @@ class ToolsetMethodCaller:
         forward_context (bool): A boolean indicating whether the context object should be forwarded to the method. If True, the context object will be passed to the method as the keyword argument specified by context_kwarg.
     """
 
-    def __init__(self, toolset: type[MCPToolset], method_name: str, context_kwarg: str, forward_context: bool = False):
+    def __init__(self, toolset: type[TypeMcpToolset], method_name: str, context_kwarg: str, forward_context: bool = False):
         self.toolset = toolset
         self.method_name = method_name
         self.context_kwarg = context_kwarg
@@ -90,66 +87,3 @@ class SyncToolMethodCaller:
 
                 values = serializer.data
             return values
-
-
-class ToolsetRegistry(type):
-    registry: ClassVar[dict[str, type[MCPToolset]]] = {}
-
-    def __init__(cls, name, bases, attrs):
-        super().__init__(name, bases, attrs)
-
-        if name != 'MCPToolset' and issubclass(cls, MCPToolset):
-            cls.registry[name] = cls
-
-    @staticmethod
-    def iterate_all_values():
-        yield from ToolsetRegistry.registry.items()
-
-
-class MCPToolset(metaclass=ToolsetRegistry):
-    """A class that provides a set of tools to to create tools that can 
-    be used by the MCP server. This class is meant to be subclassed and 
-    extended with additional tools::
-
-        class MyToolset(MCPToolset):
-            def my_tool(self):
-                pass
-                
-    Attributes:
-        server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class 
-            variable that is shared across all instances of the toolset.
-    """
-
-    server: ClassVar[TypeDjangoMcpServer] = None
-
-    def __init__(self, context = None, request = None):
-        from mcp_server.server.base import DJANGO_MCP_SERVER
-        
-        self.context = context
-        self.request = request
-
-        if self.server is None:
-            self.server = DJANGO_MCP_SERVER
-
-    def _add_tools_to(self, manager: ToolManager):
-        """Iterates of the methods of the class and adds the tools 
-        to the MCP server manager tools."""
-        returned_tools: list[Tool] = []
-
-        values = inspect.getmembers(self, predicate=inspect.ismethod)
-
-        for name, method in values:
-            if not callable(method) or name.startswith('_'):
-                continue
-
-            forward_context = False
-
-            tool = manager.add_tool(fn=method, name=name, description=method.__doc__)
-            if tool.context_kwarg is None:
-                tool.context_kwarg = '_context'
-            else:
-                forward_context = True
-
-            tool.fn = ToolsetMethodCaller(self.__class__, name, tool.context_kwarg, forward_context=forward_context)
-            returned_tools.append(tool)
-        return returned_tools

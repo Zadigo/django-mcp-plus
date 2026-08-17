@@ -1,5 +1,4 @@
-from mcp_server.server.toolset.methods import MCPToolset
-from mcp_server.server.toolset.queries import ModelQueryToolset
+from mcp_server.server.toolset.mixins import MCPToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
 
 

@@ -1,6 +1,7 @@
 import pytest
 
-from mcp_server.server.toolset.queries import ModelQueryToolset, QueryTool
+from mcp_server.server.toolset.mixins import ModelQueryToolset
+from mcp_server.server.toolset.queries import QueryTool
 from tests.testapp.models import SimpleModel
 
 

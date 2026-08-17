@@ -1,6 +1,7 @@
 import pytest
 
-from mcp_server.server.toolset.queries import ModelQueryToolset, QueryRunner
+from mcp_server.server.toolset.mixins import ModelQueryToolset
+from mcp_server.server.toolset.queries import QueryRunner
 from tests.testapp.models import SimpleModel
 
 

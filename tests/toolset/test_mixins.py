@@ -1,7 +1,7 @@
 import pytest
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
-from mcp_server.server.toolset.methods import MCPToolset, ToolsetRegistry
+from mcp_server.server.toolset.mixins import MCPToolset, ToolsetRegistry
 
 
 @pytest.fixture
@@ -19,6 +19,6 @@ def test_registration(toolset):
 
 def test_add_tool_to(toolset: MCPToolset):
     instance = toolset()
-    
+
     manager = ToolManager()
     instance._add_tools_to(manager)

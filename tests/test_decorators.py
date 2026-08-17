@@ -14,7 +14,7 @@ from mcp_server.decorators import (
     mcp_publish_update,
     serialize,
 )
-from mcp_server.server.toolset.methods import MCPToolset
+from mcp_server.server.toolset.mixins import MCPToolset
 
 
 class MySerializer(Serializer):
