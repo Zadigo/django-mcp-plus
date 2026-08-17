@@ -2,19 +2,19 @@ import json
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
+from django.http.request import HttpRequest
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
-from rest_framework.request import Request
 from starlette.datastructures import Headers
 from starlette.types import Receive, Scope, Send
 
 from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
 
 
-async def convert_to_starlette_request(request: Request, session_manager: StreamableHTTPSessionManager) -> HttpResponse:
-    """Convert a Django Rest Framework Request to a Starlette request and return a Django HttpResponse.
-    
+async def convert_to_starlette_request(request: HttpRequest, session_manager: StreamableHTTPSessionManager) -> HttpResponse:
+    """Convert a Django HttpRequest to a Starlette request and return a Django HttpResponse.
+
     Args:
-        request (Request): The Django Rest Framework Request object.
+        request (HttpRequest): The Django HttpRequest object.
         session_manager (StreamableHTTPSessionManager): The session manager to handle the request.
 
     Returns:

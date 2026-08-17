@@ -1,3 +1,4 @@
+import base64
 import logging
 from collections.abc import Sequence
 from typing import ClassVar
@@ -7,6 +8,12 @@ from django.conf import settings
 from django.db.models import CharField, Model, TextField
 from django.http import HttpRequest
 from django.utils.module_loading import import_string
+from mcp.types import (
+    BlobResourceContents,
+    EmbeddedResource,
+    TextResourceContents,
+)
+from mcp_types import TextContent
 from rest_framework.renderers import BaseRenderer
 
 from mcp_server.server.base import DJANGO_MCP_SERVER
@@ -159,7 +166,78 @@ _OUTPUT_FORMATS: dict[str, BaseRenderer] = {}
 
 
 class QueryRunner:
-    pass 
+    def __init__(self, models: dict[str, ModelQueryToolset], context: dict | None = None, request: HttpRequest | None = None):
+        self.query_tool_models = models
+        self.context = context
+        self.request = request 
+
+    def query(self, collection: str, search_pipeline: Sequence[dict] = ()):
+        """Queries the specified collection using the provided search pipeline and 
+        returns the results in the specified output format.
+        
+        Args:
+            collection (str): The collection of tools to query. This should be the name of the collection as defined in the ModelQueryToolset subclass.
+            search_pipeline (Sequence[dict]): A sequence of dictionaries representing the stages of a MongoDB aggregation pipeline. 
+                Each dictionary should contain the stage operator as the key and the stage parameters as the value.
+
+        Raises:
+            ValueError: If the specified collection is not available in the query tool models.
+        """
+        available_collections = ', '.join(str(key) for key in self.query_tool_models)
+
+        toolset = self.query_tool_models.get(collection.lower(), None)
+        if toolset is None:
+            raise ValueError(f"Collection '{collection}' is not available. Available collections are: {available_collections}")
+
+        instance = toolset(self.context, self.request)
+        qs = instance.get_queryset()
+
+        # Apply mango query 
+
+        renderer = _OUTPUT_FORMATS.get(toolset.output_format)
+        if renderer is None:
+            raise ValueError(f"Output format '{toolset.output_format}' is not supported. Supported formats are: {list(_OUTPUT_FORMATS.keys())}")
+
+        if not isinstance(renderer, BaseRenderer):
+            renderer = renderer()
+
+        _result = renderer.render(qs)
+
+        if instance.output_as_resource:
+            if not _result:
+                return ['No results found']
+
+            if  (renderer.media_type.startswith('application/') and 'json' in renderer.media_type or renderer.media_type.startswith('text/')):
+                return [
+                    'Results attached',
+                    EmbeddedResource(
+                        type='resource',
+                        resource=TextResourceContents(
+                            uri=f"resource://query_result/{renderer.format}",
+                            mimeType=renderer.media_type,
+                            text=_result
+                        )
+                    )
+                ]
+            else :
+                return [
+                    'Results attached',
+                    EmbeddedResource(
+                        type="resource",
+                        resource=BlobResourceContents(
+                            uri=f"resource://query_result/{renderer.format}",
+                            mimeType=renderer.media_type,
+                            blob=base64.b64encode(_result).decode('utf-8')
+                        )
+                    )
+                ]
+        else:
+            return [
+                TextContent(
+                    type="text", 
+                    text=_result
+                )
+            ]
 
 
 class QueryTool:
@@ -171,12 +249,12 @@ class QueryTool:
     """
 
     def __init__(self):
-        self._models: dict[Model, type[ModelQueryToolset]] = {}
+        self._models: dict[str, type[ModelQueryToolset]] = {}
 
     def add_model(self, query_tool: type[ModelQueryToolset]):
         if query_tool.output_format not in _OUTPUT_FORMATS:
             raise ValueError(f"Output format '{query_tool.output_format}' is not supported. Supported formats are: {list(_OUTPUT_FORMATS.keys())}")
-        self._models[query_tool.model] = query_tool
+        self._models[query_tool.model._meta.model_name] = query_tool
 
     def get_instructions(self):
         """Returns a string containing instructions for using the query tool. 

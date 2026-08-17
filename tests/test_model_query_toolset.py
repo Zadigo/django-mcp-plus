@@ -29,20 +29,40 @@ def test_get_queryset(instance):
 
 @pytest.mark.django_db
 def test_get_published_models(instance):
-    toolset = SimpleModelToolFromTestApp()
-    published_models = toolset.get_published_models()
+    published_models = SimpleModelToolFromTestApp.get_published_models()
     assert SimpleModel in published_models
 
 
 @pytest.mark.django_db
 def test_get_excluded_fields_empty(instance):
-    toolset = SimpleModelToolFromTestApp()
-    excluded_fields = toolset.get_exclude_fields()
+    excluded_fields = SimpleModelToolFromTestApp.get_exclude_fields()
     assert isinstance(excluded_fields, set)
 
 
 @pytest.mark.django_db
 def test_get_search_fields(instance):
-    toolset = SimpleModelToolFromTestApp()
-    search_fields = toolset.get_search_fields()
+    search_fields = SimpleModelToolFromTestApp.get_search_fields()
     assert isinstance(search_fields, set)
+
+    # Should return the existing attribute directly
+    search_fields = SimpleModelToolFromTestApp.get_search_fields()
+    assert isinstance(search_fields, set)
+    assert len(search_fields) > 0
+
+
+@pytest.mark.django_db
+def test_has_no_model():
+    SimpleModelToolFromTestApp.model = None
+
+    value = SimpleModelToolFromTestApp.get_search_fields()
+    assert not value 
+
+
+@pytest.mark.django_db
+def test_with_search_fields():
+    SimpleModelToolFromTestApp.search_fields = {'name'}
+    SimpleModelToolFromTestApp.search_fields = ['name']
+    SimpleModelToolFromTestApp.get_search_fields()
+
+    assert len(SimpleModelToolFromTestApp._text_search_fields) > 0
+    assert isinstance(SimpleModelToolFromTestApp._text_search_fields, set)

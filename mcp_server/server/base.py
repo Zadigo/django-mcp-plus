@@ -25,7 +25,7 @@ MCP_SESSION_ID_HDR = "Mcp-Session-Id"
 
 
 class DjangoMcpServer(MCPServer):
-    def __init__(self, name: str | None=None, instructions: str | None = None, stateless: bool = False):
+    def __init__(self, name: str | None = None, instructions: str | None = None, stateless: bool = False):
         # Prevent extra server settings as we do not use the embedded server
         super().__init__(name or 'django_mcp_server', instructions)
         self.stateless = stateless
