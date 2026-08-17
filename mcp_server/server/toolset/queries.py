@@ -183,13 +183,13 @@ class QueryTool:
     def _add_tools_to(self, manager: ToolManager):
         from mcp_server.server.toolset.methods import ToolsetMethodCaller
         
-        def _query(collection: str, search_pipeline: list[dict] | None = None):
+        def dummy(collection: str, search_pipeline: list[dict] | None = None):
             pass
 
         name = 'query_data_collections'
 
         tool = manager.add_tool(
-            fn=sync_to_async(_query),
+            fn=sync_to_async(dummy),
             name=name,
             description=self.get_instructions()
         )

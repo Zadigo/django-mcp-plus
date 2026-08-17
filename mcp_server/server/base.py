@@ -90,20 +90,20 @@ class DjangoMcpServer(MCPServer):
             tool.parameters['properties']['body'] = body_schema
         else:
             try:
-                tool.parameters['properties']['body'] = view_class.schema._map_serializer(
-                    view_class.serializer_class(), 
+                # Instantiate the view class to access its 
+                # schema and serializer and to prevent AutoSchema
+                # from raising an error when trying to access the 
+                # serializer class
+                view_instance = view_class(request=None, format_kwarg=None)
+                schema_generator = view_class.schema
+                schema_generator.view = view_instance
+                tool.parameters['properties']['body'] = schema_generator._map_serializer(
+                    view_instance.get_serializer(),  # Safer than calling serializer_class() directly
                     'response'
                 )
-            except AttributeError as e:
-                raise logger.critical(f"Could not determine body schema for {view_class.__name__} {e}. Please provide a body_schema argument.")
-
-            # try:
-            #     tool.parameters['properties'] = view_class.schema.map_serializer(view_class.serializer_class(), 'response')
-            # except Exception:
-            #     try:
-            #         tool.parameters['properties']['body'] = view_class.schema._map_serializer(view_class.serializer_class(), 'response')
-            #     except Exception as e:
-            #         raise ValueError(f"Could not determine body schema for {view_class.__name__}. Please provide a body_schema argument.") from e
+            except Exception as e:
+                logger.critical(f"Could not determine body schema for {view_class.__name__} {e}. Please provide a body_schema argument.")
+                raise
 
     def register_toolset(self, toolset: TypeToolset):
         """Register a toolset with the server. This method will add all 
@@ -136,11 +136,7 @@ class DjangoMcpServer(MCPServer):
             description=instructions or view_class.__doc__,
         )
 
-        tool.fn = sync_to_async(DrfListViewTool(view_class))(
-            self,
-            view_class,
-            actions=actions
-        )
+        tool.fn = sync_to_async(DrfListViewTool(self, view_class, actions=actions))
 
     def register_drf_update_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
         """

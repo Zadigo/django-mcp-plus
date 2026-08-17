@@ -1,3 +1,4 @@
+import pytest
 from django.conf import settings
 from faker import Faker
 
@@ -45,3 +46,29 @@ def pytest_configure(config):
             },
             STATIC_URL='/static/',
         )
+
+
+
+@pytest.fixture
+def model_query_toolset():
+    from mcp_server.server.toolset.mixins import ModelQueryToolset
+    from tests.testapp.models import SimpleModel
+
+    class SimpleQueryToolset(ModelQueryToolset):
+        model = SimpleModel
+
+        def simple_method(self, arg1:int , arg2: int):
+            return [arg1, arg2]
+    return SimpleQueryToolset
+
+
+@pytest.fixture
+def http_request():
+    from django.test import RequestFactory
+    return RequestFactory().get('/')
+
+
+@pytest.fixture
+def model_instance():
+    from tests.testapp.models import SimpleModel
+    return SimpleModel.objects.create(name="Test 1")

@@ -31,7 +31,8 @@ class ToolsetMethodCaller:
         toolset (McpMethodsToolset): The toolset instance that this method caller is associated with.
         method (str): The name of the method that this method caller is associated with.
         context_kwarg (str): The name of the keyword argument that will be used to pass the context object to the method.
-        forward_context (bool): A boolean indicating whether the context object should be forwarded to the method. If True, the context object will be passed to the method as the keyword argument specified by context_kwarg.
+        forward_context (bool): A boolean indicating whether the context object should be forwarded to the method. If True, the 
+            context object will be passed to the method as the keyword argument specified by context_kwarg.
     """
 
     def __init__(self, toolset: type[TypeMcpToolset], method_name: str, context_kwarg: str, forward_context: bool = False):
@@ -85,6 +86,6 @@ class SyncToolsetMethodCaller:
 
                 serializer: Serializer = serializer_class(data=values, many=many)
                 serializer.is_valid(raise_exception=True)
-
                 values = serializer.data
+                
             return values

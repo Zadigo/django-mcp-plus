@@ -193,7 +193,7 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
             logger.warning(f"ModelQueryToolset subclass {cls.__name__} has no model defined.")
             return cls._text_search_fields
         
-        if cls.search_fields is not None:
+        if cls.search_fields:
             cls._text_search_fields: set[str] = set(cls.search_fields)
         elif not cls.fields:
             for field in cls.model._meta.get_fields():

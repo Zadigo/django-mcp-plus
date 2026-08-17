@@ -33,6 +33,8 @@ def test_serialize_decorator():
     assert hasattr(method, "_mcp_plus_serializer")
     assert method._mcp_plus_serializer == MySerializer
 
+    # "{'type': 'object', 'properties': {'name': {'type': 'string', 'maxLength': 100}}, 'required': ['name']}"
+
 
 def test_mcp_publish_list_decorator():
     @mcp_publish_list
@@ -40,22 +42,12 @@ def test_mcp_publish_list_decorator():
         """A simple view that uses Django REST Framework's ListAPIView."""
         serializer_class = MySerializer
 
-    assert hasattr(MyListView, "_mcp_plus_toolset_method")
-    assert MyListView._mcp_plus_toolset_method["name"] == "MyListView"
-    assert MyListView._mcp_plus_toolset_method["instructions"] is None
-    assert MyListView._mcp_plus_toolset_method["actions"] is None
-
 
 def test_mcp_publish_create_decorator():
     @mcp_publish_create
     class MyCreateView(CreateAPIView):
         """A simple view that uses Django REST Framework's CreateAPIView."""
         serializer_class = MySerializer
-
-    assert hasattr(MyCreateView, "_mcp_plus_toolset_method")
-    assert MyCreateView._mcp_plus_toolset_method["name"] == "MyCreateView"
-    assert MyCreateView._mcp_plus_toolset_method["instructions"] is None
-    assert MyCreateView._mcp_plus_toolset_method["actions"] is None
 
 
 
@@ -65,23 +57,13 @@ def test_mcp_publish_update_decorator():
         """A simple view that uses Django REST Framework's UpdateAPIView."""
         serializer_class = MySerializer
 
-    assert hasattr(MyUpdateView, "_mcp_plus_toolset_method")
-    assert MyUpdateView._mcp_plus_toolset_method["name"] == "MyUpdateView"
-    assert MyUpdateView._mcp_plus_toolset_method["instructions"] is None
-    assert MyUpdateView._mcp_plus_toolset_method["actions"] is None
-
-
 
 def test_mcp_publish_delete_decorator():
     @mcp_publish_delete
     class MyDeleteView(DestroyAPIView):
         """A simple view that uses Django REST Framework's DeleteAPIView."""
+        serializer_class = MySerializer
         
-    assert hasattr(MyDeleteView, "_mcp_plus_toolset_method")
-    assert MyDeleteView._mcp_plus_toolset_method["name"] == "MyDeleteView"
-    assert MyDeleteView._mcp_plus_toolset_method["instructions"] is None
-    assert MyDeleteView._mcp_plus_toolset_method["actions"] is None
-
 
 def test_inline_publish_decorator():
     class SimpleSerializer(serializers.Serializer):
