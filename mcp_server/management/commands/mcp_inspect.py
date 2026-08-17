@@ -1,47 +1,15 @@
-import anyio
+import enum
+
 from asgiref.sync import async_to_sync
 from django.core.management.base import BaseCommand
-from mcp import ClientSession
+from mcp import Client
 
 from mcp_server.server.base import DJANGO_MCP_SERVER
 
-# async def _check_client():
-#     cl_wr, svr_rd = anyio.create_memory_object_stream(0)
-#     svr_wr, cl_rd = anyio.create_memory_object_stream(0)
 
-#     async def run_server():
-#         await mcp_server._mcp_server.run(
-#             svr_rd,
-#             svr_wr,
-#             mcp_server._mcp_server.create_initialization_options(),
-#         )
-
-#     async def run_client():
-#         async with ClientSession(cl_rd, cl_wr) as session:
-#             await session.initialize()
-
-#             print("Tools discovered in server:")
-#             tool_list = await session.list_tools()
-#             for tool in tool_list.tools:
-#                 print(f'\n\t{tool.name}: {tool.description}')
-#                 print(f'\tParameters: {tool.inputSchema}')
-
-#             print("Resources discovered in server:")
-#             resource_list = await session.list_resources()
-#             for resource in resource_list.resources:
-#                 print(f'\n\t{resource.name}: {resource.description}')
-
-#             print("Prompts discovered in server:")
-#             prompt_list = await session.list_prompts()
-#             for prompt in prompt_list.prompts:
-#                 print(f'\n\t{prompt.name}: {prompt.description}')
-
-#     async with anyio.create_task_group() as tg:
-#         tg.start_soon(run_server)
-#         tg.start_soon(run_client)
-
-
-# _check_client_sync = async_to_sync(_check_client)
+class Tabs(enum.Enum):
+    TAB = '   '
+    TAB_PLUS = '   + '
 
 
 class Command(BaseCommand):
@@ -51,34 +19,24 @@ class Command(BaseCommand):
         async_to_sync(self.inspect)()
 
     async def inspect(self):
-        send_stream, receive_stream = anyio.create_memory_object_stream(0)
-        send_stream1, receive_stream2 = anyio.create_memory_object_stream(0)
+        # This executes purely in-memory with zero subprocess or network overhead.
+        async with Client(DJANGO_MCP_SERVER) as client:
+            # 1. Discover Tools
+            self.stdout.write(self.style.HTTP_INFO("Tools discovered in server:"))
+            result = await client.list_tools()
+            for tool in result.tools:
+                # : {tool.description}
+                self.stdout.write(self.style.SUCCESS(Tabs.TAB_PLUS.value) + f"{tool.name}")
+                # self.stdout.write(f"      - {tool.input_schema}")
 
-        async def runserver():
-            await DJANGO_MCP_SERVER.run(receive_stream, send_stream1, DJANGO_MCP_SERVER.create_initialization_options())
+            # # 2. Discover Resources
+            # self.stdout.write("\nResources discovered in server:")
+            # resource_list = await client.list_resources()
+            # for resource in resource_list.resources:
+            #     self.stdout.write(f'\t{resource.name}: {resource.description}')
 
-        async def runclient():
-            async with ClientSession(receive_stream2, send_stream) as session:
-                await session.initialize()
-
-                self.stdout.write("Tools discovered in server:")
-
-                result = await session.list_tools()
-                for tool in result.tools:
-                    self.stdout.write(f"  ${self.style.SUCCESS('+')} {tool.name}: {tool.description}")
-                    self.stdout.write(f"      - {tool.input_schema}")
-
-                self.stdout.write("Resources discovered in server:")
-
-                resource_list = await session.list_resources()
-                for resource in resource_list.resources:
-                    self.stdout.write(f'\n\t{resource.name}: {resource.description}')
-
-                print("Prompts discovered in server:")
-                prompt_list = await session.list_prompts()
-                for prompt in prompt_list.prompts:
-                    self.stdout.write(f'\n\t{prompt.name}: {prompt.description}')
-
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(runserver)
-            tg.start_soon(runclient)
+            # # 3. Discover Prompts
+            # self.stdout.write("\nPrompts discovered in server:")
+            # prompt_list = await client.list_prompts()
+            # for prompt in prompt_list.prompts:
+            #     self.stdout.write(f'\t{prompt.name}: {prompt.description}')
