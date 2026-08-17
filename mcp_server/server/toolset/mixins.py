@@ -6,6 +6,7 @@ from typing import ClassVar
 from django.db.models import CharField, Model, TextField
 from django.http import HttpRequest
 from mcp import Tool
+from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
 from mcp_server.server.base import DJANGO_MCP_SERVER
@@ -45,7 +46,7 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
 
     server: ClassVar[TypeDjangoMcpServer] = None
 
-    def __init__(self, context = None, request = None):
+    def __init__(self, context: Context | None = None, request: HttpRequest | None = None):
         
         self.context = context
         self.request = request

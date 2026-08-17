@@ -48,14 +48,14 @@ class Command(BaseCommand):
     help = 'Inspect installed tools, resources and prompts'
 
     def handle(self, *args, **options):
-        async_to_sync(self.inspect())
+        async_to_sync(self.inspect)()
 
     async def inspect(self):
         send_stream, receive_stream = anyio.create_memory_object_stream(0)
         send_stream1, receive_stream2 = anyio.create_memory_object_stream(0)
 
         async def runserver():
-            await DJANGO_MCP_SERVER.run(receive_stream, send_stream1, DJANGO_MCP_SERVER._mcp_server.create_initialization_options())
+            await DJANGO_MCP_SERVER.run(receive_stream, send_stream1, DJANGO_MCP_SERVER.create_initialization_options())
 
         async def runclient():
             async with ClientSession(receive_stream2, send_stream) as session:

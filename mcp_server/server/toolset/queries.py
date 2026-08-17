@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.module_loading import import_string
+from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 from mcp.types import (
     BlobResourceContents,
@@ -26,7 +27,7 @@ _OUTPUT_FORMATS: dict[str, BaseRenderer] = {}
 
 
 class QueryRunner:
-    def __init__(self, models: dict[str, TypeModelToolset], context: dict | None = None, request: HttpRequest | None = None):
+    def __init__(self, models: dict[str, TypeModelToolset], context: Context | None = None, request: HttpRequest | None = None):
         self.query_tool_models = models
         self.context = context
         self.request = request 
@@ -164,8 +165,8 @@ class QueryTool:
 
         return template
 
-    def factory(self, context, request):
-        return QueryRunner()
+    def factory(self, context: Context, request: HttpRequest):
+        return QueryRunner(self._models, context=context, request=request)
 
     def _add_tools_to(self, manager: ToolManager):
         from mcp_server.server.toolset.methods import ToolsetMethodCaller
