@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # thread or context.
 DJANGO_REQUEST_CONTEXT = contextvars.ContextVar('django_request')
 
+
 class ToolsetMethodCaller:
     """A class that provides a way to call methods on a toolset instance. This class is used to wrap the methods of a toolset
     instance so that they can be called with the correct context and request objects. This class is meant to be used
@@ -51,14 +52,14 @@ class ToolsetMethodCaller:
             request=DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
         )
 
-        method = sync_to_async(SyncToolMethodCaller(getattr(instance, self.method_name)))
+        method = sync_to_async(SyncToolsetMethodCaller(getattr(instance, self.method_name)))
         if not self.forward_context:
             kwargs.pop(self.context_kwarg, None)
 
         return method(*args, **kwargs)
 
 
-class SyncToolMethodCaller:
+class SyncToolsetMethodCaller:
     def __init__(self, func: TypeToolsetMethod):
         self.func = func
         functools.update_wrapper(self, func)
