@@ -1,7 +1,7 @@
 from mcp_server.server.base import DJANGO_MCP_SERVER
-from mcp_server.server.toolset.methods import ToolsetRegistry
+from mcp_server.server.toolset.mixins import ToolsetRegistry
 from mcp_server.server.toolset.queries import (
-    _initialize_query_tools,
+    initialize_query_tools,
 )
 
 
@@ -14,4 +14,4 @@ def initialize_toolsets():
     for _, klass in ToolsetRegistry.iterate_all_values():
         klass.server.register_toolset(klass())
 
-    _initialize_query_tools()
+    initialize_query_tools()

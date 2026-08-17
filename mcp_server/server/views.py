@@ -168,7 +168,6 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
             raise e
 
 
-
 class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[DestroyAPIView], actions = None):
         if not issubclass(view_class, DestroyAPIView):

@@ -186,7 +186,7 @@ class QueryTool:
         return [tool]
 
 
-def _initialize_query_tools():
+def initialize_query_tools():
     """Function to initialize the query tools for the Django MCP server."""
     global _OUTPUT_FORMATS
     
