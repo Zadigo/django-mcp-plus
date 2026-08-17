@@ -1,18 +1,16 @@
 from django.db.models import QuerySet
 
-from mcp_server import (
-    MCPToolset,
-    ModelQueryToolset,
-    drf_publish_create_mcp_tool,
-    drf_publish_destroy_mcp_tool,
-    drf_publish_list_mcp_tool,
-    drf_publish_update_mcp_tool,
-    drf_serialize_output,
-)
-
 # For more advanced low level usage, you can use the mcp_server directly
 from mcp_server import mcp_server as mcp
-from mcp_server.djangomcp import DjangoMCP
+from mcp_server.decorators import (
+    mcp_publish_create,
+    mcp_publish_delete,
+    mcp_publish_list,
+    mcp_publish_update,
+    serialize,
+)
+from mcp_server.server.base import DjangoMcpServer
+from mcp_server.server.toolset.mixins import MCPToolset, ModelQueryToolset
 
 from .models import Bird, City, Location
 from .serializers import BirdSerializer
@@ -56,7 +54,7 @@ class SpeciesCount(MCPToolset):
         """Get the queryset for birds methods starting with _ are not registered as tools"""
         return Bird.objects.all() if search_string is None else Bird.objects.filter(species__icontains=search_string)
 
-    @drf_serialize_output(BirdSerializer)
+    @serialize(BirdSerializer)
     def increment_species(self, name: str, amount: int = 1):
         """
         Increment the count of a bird species by a specified amount and returns tehe new count.
@@ -73,7 +71,7 @@ class SpeciesCount(MCPToolset):
 
 
 # To create a secondary MCP endpoint with its own isolated toolset, you can use the DjangoMCP constructor
-second_mcp = DjangoMCP(name="altserver")
+second_mcp = DjangoMcpServer(name="altserver")
 
 
 @mcp.tool()
@@ -92,14 +90,14 @@ async def get_bird_news():
     return "Scientists have discovered a new bird species!"
 
 
-drf_publish_create_mcp_tool(LocationAPIView)
+mcp_publish_create(LocationAPIView)
 
-drf_publish_update_mcp_tool(LocationAPIUpdateView)
+mcp_publish_update(LocationAPIUpdateView)
 
-drf_publish_destroy_mcp_tool(LocationAPIUpdateView, instructions="A tool to delete a location")
+mcp_publish_delete(LocationAPIUpdateView, instructions="A tool to delete a location")
 
-drf_publish_destroy_mcp_tool(LocationAPIUpdateViewSet, instructions="Another tool to delete a location", actions={"delete": "destroy"})
+mcp_publish_delete(LocationAPIUpdateViewSet, instructions="Another tool to delete a location", actions={"delete": "destroy"})
 
-drf_publish_list_mcp_tool(LocationAPIListView, instructions="A tool to list all locations")
+mcp_publish_list(LocationAPIListView, instructions="A tool to list all locations")
 
-drf_publish_list_mcp_tool(LocationAPIListViewSet, instructions="Another tool to list all locations", actions={"get": "list"},)
+mcp_publish_list(LocationAPIListViewSet, instructions="Another tool to list all locations", actions={"get": "list"},)
