@@ -18,5 +18,6 @@
         "--cov-report=html:django_mcp_plus_coverage",
         "--report-log=reports/reports.json",
         "-s",
+        "--reuse-db",
     ]
 }

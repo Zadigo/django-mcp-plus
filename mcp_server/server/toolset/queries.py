@@ -1,14 +1,25 @@
+import logging
 from collections.abc import Sequence
 from typing import ClassVar
 
-from django.db.models import Model
+from django.db.models import CharField, Model, TextField
 from django.http import HttpRequest
 
 from mcp_server.typings import TypeDjangoMcpServer
 
+logger = logging.getLogger(__name__)
 
 class AbstractToolset(type):
-    registry: ClassVar[dict[str, type]] = {}
+    """A registry for all subclasses of ModelQueryToolset. This metaclass 
+    is used to keep track of all subclasses of ModelQueryToolset and their associated 
+    models. It also provides a way to get the published models for a given 
+    server instance.
+    
+    Attributes:
+        registry (dict[str, ModelQueryToolset]): A dictionary that maps the name of the subclass to the subclass itself. This is used to keep track of all subclasses of ModelQueryToolset
+    """
+
+    registry: ClassVar[dict[str, ModelQueryToolset]] = {}
 
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
@@ -18,7 +29,7 @@ class AbstractToolset(type):
 
 
 
-class ModelQueryToolset[T](metaclass=AbstractToolset):
+class ModelQueryToolset(metaclass=AbstractToolset):
     """A class that provides a set of tools to to create tools that can 
     be used by the MCP server. This class is meant to be subclassed and 
     extended with additional tools::
@@ -56,17 +67,75 @@ class ModelQueryToolset[T](metaclass=AbstractToolset):
         self.request = request
 
     @classmethod
-    def get_exclude_fields(cls):
-        pass
+    def has_model(cls):
+        """Returns True if the toolset has a model defined, False otherwise."""
+        return cls.model is not None
 
     @classmethod
+    def get_exclude_fields(cls):
+        if hasattr(cls, '_exclude_fields'):
+            return cls._exclude_fields
+
+        cls._exclude_fields: set[str] = set()
+        if not cls.has_model():
+            logger.warning(f"ModelQueryToolset subclass {cls.__name__} has no model defined.")
+            return cls._exclude_fields
+
+        published_models = cls.get_published_models()
+        for model in published_models:
+            for field in model._meta.get_fields():
+                if field.is_relation and field.related_model not in published_models:
+                    cls._exclude_fields.add(field.name)
+        return cls._exclude_fields
+    
+    @classmethod
     def get_published_models(cls):
-        pass
+        if hasattr(cls, '_published_models'):
+            return cls._published_models
+        
+        cls._published_models: set[type[Model]] = set()
+        if not cls.has_model():
+            logger.warning(f"ModelQueryToolset subclass {cls.__name__} has no model defined.")
+            return cls._published_models
+
+        for item in cls.registry.values():
+            if item.server == cls.server:
+                cls._published_models.add(item.model)
+
+        return cls._published_models
 
     @classmethod
     def get_search_fields(cls):
-        pass
+        if hasattr(cls, '_text_search_fields'):
+            return cls._text_search_fields
 
+        cls._text_search_fields: set[str] = set()
+        if not cls.has_model():
+            logger.warning(f"ModelQueryToolset subclass {cls.__name__} has no model defined.")
+            return cls._text_search_fields
+        
+        if cls.search_fields is not None:
+            cls._text_search_fields: set[str] = set(cls.search_fields)
+        elif not cls.fields:
+            for field in cls.model._meta.get_fields():
+                if not isinstance(field, (CharField, TextField)):
+                    continue
+                
+                if field.concrete and not field.is_relation:
+                    cls._text_search_fields.add(field.name)
+        else:
+            for field in cls.model._meta.get_fields():
+                if not isinstance(field, (CharField, TextField)):
+                    continue
+                
+                if field.name in cls.fields and field.concrete and not field.is_relation:
+                    cls._text_search_fields.add(field.name)
+            
+        if not cls._text_search_fields:
+            logger.debug(f"No text search fields found for model {cls.model.__name__}.")
+
+        return cls._text_search_fields
+    
     def get_queryset(self):
         """Returns the queryset for the model associated with this toolset. You
         can override this method to customize the queryset returned by the toolset. 

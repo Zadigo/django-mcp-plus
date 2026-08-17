@@ -11,7 +11,7 @@ class SimpleModel(models.Model):
 
 
 
-class SimpleModelTool(ModelQueryToolset):
+class SimpleModelToolFromTestApp(ModelQueryToolset):
     model = SimpleModel
 
     def get_queryset(self):
