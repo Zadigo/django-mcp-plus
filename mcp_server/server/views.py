@@ -73,8 +73,6 @@ class BaseApiViewTool[T = APIView]:
 
 
 class ViewMixin:
-    
-
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[APIView], actions = None):
         self.server = server
         self.view = view_class
@@ -86,9 +84,11 @@ class ViewMixin:
             'filter_backends': [],
             'authentication_classes': [],
             'permission_classes': view_class.permission_classes,
-            'handle_exception': view_class.handle_exception,
-            # 'raise_exception': raise_exception,
+            'handle_exception': raise_exception
         }
+
+        if issubclass(view_class, ListAPIView):
+            kwargs['pagination_class'] = view_class.pagination_class
 
         if actions is not None:
             kwargs['actions'] = actions
@@ -163,7 +163,7 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
         )
 
         try:
-            return self.view(request, **{(self.view.lookup_url_kwarg or self.view.lookup_field): id}).data
+            return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
         except Exception as e:
             raise e
 

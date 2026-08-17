@@ -10,6 +10,7 @@ dependencies = [
     "django>=6.1",
     "djangorestframework>=3.18.0",
     "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.30.0",
     "httpx2>=2.10.0",
     "mcp>=2.0.0",
 ]
@@ -62,7 +63,9 @@ omit = [
     "manage.py",
     "*/migrations/*",
     "*/__init__.py",
-    "*/typings.py"
+    "*/typings.py",
+    "tests/*",
+    "test/*"
 ]
 
 [tool.coverage.report]

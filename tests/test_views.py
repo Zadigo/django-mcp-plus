@@ -58,7 +58,7 @@ def test_drf_create_view_tool(server, request_context):
 
 
 class SimpleUpdateApiView(UpdateAPIView):
-    def put(self, request):
+    def put(self, request, *args, **kwargs):
         return Response({"message": "Hello, World!"})
 
 
@@ -70,7 +70,7 @@ def test_drf_update_view_tool(server, request_context):
 
 
 class SimpleDeleteApiView(DestroyAPIView):
-    def delete(self, request):
+    def delete(self, request, *args, **kwargs):
         return Response({"message": "Hello, World!"})
 
 

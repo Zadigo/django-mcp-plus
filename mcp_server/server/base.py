@@ -1,7 +1,9 @@
+import logging
 from importlib import import_module
 
 from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
+from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpRequest, HttpResponse
 from mcp.server import MCPServer
 from mcp.server.mcpserver.tools import Tool
@@ -16,17 +18,19 @@ from mcp_server.server.views import (
     DrfUpdateViewTool,
 )
 
+logger = logging.getLogger(__name__)
+
 MCP_SESSION_ID_HDR = "Mcp-Session-Id"
 
 
 class DjangoMcpServer(MCPServer):
-    def __init__(self, name: str | None=None, instructions: str | None=None, stateless: bool=False):
+    def __init__(self, name: str | None=None, instructions: str | None = None, stateless: bool = False):
         # Prevent extra server settings as we do not use the embedded server
         super().__init__(name or 'django_mcp_server', instructions)
         self.stateless = stateless
 
         engine = import_module(settings.SESSION_ENGINE)
-        self.session_store = engine.SessionStore
+        self.session_store: SessionStore = engine.SessionStore
 
         server_instruction_tool = getattr(settings, "DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL", True)
         if server_instruction_tool:
@@ -41,13 +45,25 @@ class DjangoMcpServer(MCPServer):
 
     def _handle_request(self, request: HttpRequest) -> HttpResponse:
         if not self.stateless:
-            pass
+            session_key = request.headers.get(MCP_SESSION_ID_HDR)
+            if session_key:
+                store = self.session_store(session_key=session_key)
+                if not store.exists():
+                    return HttpResponse(status=404, content='Session not found')
+                request.session = store
+            elif request.data.get('method') == 'initialize':
+                # NOTE: Trick to read body before data to avoid DRF complaining
+                request.session = self.session_store()
+            else:
+                return HttpResponse(status=400, content="Session required for stateful server")
 
         result = async_to_sync(convert_to_starlette_request)(request, self.session_manager)
         if not self.stateless and hasattr(request, "session"):
             request.session.save()
             result.headers[MCP_SESSION_ID_HDR] = request.session.session_key
-            delattr(request, "session")
+            # Clean up the session attribute to avoid potential issues 
+            # with Django's request lifecycle
+            delattr(request, 'session')
 
         return result
 
@@ -57,15 +73,23 @@ class DjangoMcpServer(MCPServer):
 
     def _extract_schema(self, tool: Tool, body_schema: dict | None, view_class: type[APIView]):
         if body_schema is not None:
-            tool.parameters['properties'] = body_schema
+            tool.parameters['properties']['body'] = body_schema
         else:
             try:
-                tool.parameters['properties'] = view_class.schema.map_serializer(view_class.serializer_class())
-            except Exception:
-                try:
-                    tool.parameters['properties']['body'] = view_class.schema._map_serializer(view_class.serializer_class())
-                except Exception as e:
-                    raise ValueError(f"Could not determine body schema for {view_class.__name__}. Please provide a body_schema argument.") from e
+                tool.parameters['properties']['body'] = view_class.schema._map_serializer(
+                    view_class.serializer_class(), 
+                    'response'
+                )
+            except AttributeError as e:
+                raise logger.critical(f"Could not determine body schema for {view_class.__name__} {e}. Please provide a body_schema argument.")
+
+            # try:
+            #     tool.parameters['properties'] = view_class.schema.map_serializer(view_class.serializer_class(), 'response')
+            # except Exception:
+            #     try:
+            #         tool.parameters['properties']['body'] = view_class.schema._map_serializer(view_class.serializer_class(), 'response')
+            #     except Exception as e:
+            #         raise ValueError(f"Could not determine body schema for {view_class.__name__}. Please provide a body_schema argument.") from e
 
 
     def register_drf_list_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
@@ -120,11 +144,7 @@ class DjangoMcpServer(MCPServer):
         )
 
         # Register the view class with the toolset method using DrfUpdateViewTool
-        tool.fn = sync_to_async(DrfUpdateViewTool(view_class))(
-            self,
-            view_class,
-            actions=actions
-        )
+        tool.fn = sync_to_async(DrfUpdateViewTool(self, view_class, actions=actions))
 
         self._extract_schema(tool, body_schema, view_class)
 
@@ -151,11 +171,7 @@ class DjangoMcpServer(MCPServer):
         )
 
         # Register the view class with the toolset method using DrfCreateViewTool
-        tool.fn = sync_to_async(DrfCreateViewTool(view_class))(
-            self,
-            view_class,
-            actions=actions
-        )
+        tool.fn = sync_to_async(DrfCreateViewTool(self, view_class, actions=actions))
 
         self._extract_schema(tool, body_schema, view_class)
 
@@ -182,11 +198,7 @@ class DjangoMcpServer(MCPServer):
         )
 
         # Register the view class with the toolset method using DrfRetrieveViewTool
-        tool.fn = sync_to_async(DrfRetrieveViewTool(view_class))(
-            self,
-            view_class,
-            actions=actions
-        )
+        tool.fn = sync_to_async(DrfRetrieveViewTool(self, view_class, actions=actions))
 
         self._extract_schema(tool, body_schema, view_class)
 
@@ -213,13 +225,9 @@ class DjangoMcpServer(MCPServer):
         )
 
         # Register the view class with the toolset method using DrfDeleteViewTool
-        tool.fn = sync_to_async(DrfDeleteViewTool(view_class))(
-            self,
-            view_class,
-            actions=actions
-        )
+        tool.fn = sync_to_async(DrfDeleteViewTool(self, view_class, actions=actions))
 
         self._extract_schema(tool, body_schema, view_class)
 
 
-DJANGO_MCP_SERVER = DjangoMcpServer()
+DJANGO_MCP_SERVER = DjangoMcpServer(**getattr(settings, 'DJANGO_MCP_PLUS_SERVER_CONFIG', {}))

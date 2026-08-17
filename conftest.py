@@ -21,6 +21,7 @@ def pytest_configure(config):
                 'django.contrib.sessions',
                 'django.contrib.messages',
                 'django.contrib.staticfiles',
+                'drf_spectacular',
                 'mcp_server',
             ],
             AUTH_USER_MODEL='auth.User',
