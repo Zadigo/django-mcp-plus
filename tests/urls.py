@@ -3,7 +3,7 @@ from django.urls import path
 from django.utils.module_loading import import_string
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from mcp_server.views import DjangoMcpPlusView
+from mcp_server.views import StreamableHttpView
 
 base_url = getattr(settings, 'DJANGO_MCP_PLUS_ENDPOINT', 'mcp')
 
@@ -14,7 +14,7 @@ authentication_classes = [import_string(cls) for cls in getattr(settings, 'DJANG
 urlpatterns = [
     path(
         base_url,
-        DjangoMcpPlusView.as_view(
+        StreamableHttpView.as_view(
             permission_classes=permission_classes,
             authentication_classes=authentication_classes
         ),

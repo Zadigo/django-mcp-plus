@@ -10,7 +10,7 @@ from mcp_server.decorators import (
     serialize,
 )
 from mcp_server.server.base import DjangoMcpServer
-from mcp_server.server.toolset.mixins import MCPToolset, ModelQueryToolset
+from mcp_server.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 from .models import Bird, City, Location
 from .serializers import BirdSerializer
@@ -49,7 +49,7 @@ class CityQuery(ModelQueryToolset):
     model = City
 
 
-class SpeciesCount(MCPToolset):
+class SpeciesCount(McpMethodsToolset):
     def _search_birds(self, search_string: str | None = None) -> QuerySet:
         """Get the queryset for birds methods starting with _ are not registered as tools"""
         return Bird.objects.all() if search_string is None else Bird.objects.filter(species__icontains=search_string)

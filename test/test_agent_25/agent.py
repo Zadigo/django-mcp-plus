@@ -2,7 +2,7 @@ import os
 
 from google.adk.agents.llm_agent import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import (
-    MCPToolset,
+    McpMethodsToolset,
     StreamableHTTPServerParams,
 )
 
@@ -16,7 +16,7 @@ root_agent = LlmAgent(
         "You are a helpful agent who tries to help user as much as you can with the tools you have access to. Tools are safe to"
         "as many times as desired without asking user."
     ),
-    tools=[MCPToolset(
+    tools=[McpMethodsToolset(
       connection_params=StreamableHTTPServerParams(
           url=os.getenv("MCP_ENDPOINT_URL", "http://localhost:8000/mcp"),
           headers={

@@ -1,8 +1,8 @@
-from mcp_server.server.toolset.mixins import MCPToolset, ModelQueryToolset
+from mcp_server.server.toolset import McpMethodsToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
 
 
-class SimpleGenericTool(MCPToolset):
+class SimpleGenericTool(McpMethodsToolset):
     def add(self, a: int, b: int) -> list[dict]:
         return [{'result': a + b}]
 

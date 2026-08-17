@@ -14,7 +14,7 @@ from mcp_server.decorators import (
     mcp_publish_update,
     serialize,
 )
-from mcp_server.server.toolset.mixins import MCPToolset
+from mcp_server.server.toolset.mixins import McpMethodsToolset
 
 
 class MySerializer(Serializer):
@@ -22,7 +22,7 @@ class MySerializer(Serializer):
 
 
 def test_serialize_decorator():
-    class SimpleToolset(MCPToolset):
+    class SimpleToolset(McpMethodsToolset):
         @serialize(MySerializer)
         def some_tool(self):
             pass

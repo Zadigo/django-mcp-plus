@@ -28,7 +28,7 @@ class ToolsetMethodCaller:
     internally by the MCP server and should not be instantiated directly.
 
     Attributes:
-        toolset (MCPToolset): The toolset instance that this method caller is associated with.
+        toolset (McpMethodsToolset): The toolset instance that this method caller is associated with.
         method (str): The name of the method that this method caller is associated with.
         context_kwarg (str): The name of the keyword argument that will be used to pass the context object to the method.
         forward_context (bool): A boolean indicating whether the context object should be forwarded to the method. If True, the context object will be passed to the method as the keyword argument specified by context_kwarg.

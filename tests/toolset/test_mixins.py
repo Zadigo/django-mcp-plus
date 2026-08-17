@@ -1,12 +1,12 @@
 import pytest
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
-from mcp_server.server.toolset.mixins import MCPToolset, ToolsetRegistry
+from mcp_server.server.toolset.mixins import McpMethodsToolset, ToolsetRegistry
 
 
 @pytest.fixture
 def toolset():
-    class SimpleToolset(MCPToolset):
+    class SimpleToolset(McpMethodsToolset):
         def simple_tool(self):
             pass
 
@@ -17,7 +17,7 @@ def test_registration(toolset):
     assert len(list(ToolsetRegistry.registry.keys())) > 0
 
 
-def test_add_tool_to(toolset: MCPToolset):
+def test_add_tool_to(toolset: McpMethodsToolset):
     instance = toolset()
 
     manager = ToolManager()

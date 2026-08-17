@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class ToolsetRegistry(type):
-    registry: ClassVar[dict[str, type[MCPToolset]]] = {}
+    registry: ClassVar[dict[str, type[McpMethodsToolset]]] = {}
 
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
 
-        if name != 'MCPToolset' and issubclass(cls, MCPToolset):
+        if name != 'McpMethodsToolset' and issubclass(cls, McpMethodsToolset):
             cls.registry[name] = cls
 
     @staticmethod
@@ -29,12 +29,12 @@ class ToolsetRegistry(type):
         yield from ToolsetRegistry.registry.items()
 
 
-class MCPToolset(metaclass=ToolsetRegistry):
+class McpMethodsToolset(metaclass=ToolsetRegistry):
     """A class that provides a set of tools to to create tools that can 
     be used by the MCP server. This class is meant to be subclassed and 
     extended with additional tools::
 
-        class MyToolset(MCPToolset):
+        class MyToolset(McpMethodsToolset):
             def my_tool(self):
                 pass
                 
