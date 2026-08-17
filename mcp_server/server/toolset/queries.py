@@ -202,34 +202,34 @@ class QueryTool:
             ```
             """
 
-            if klass._text_search_fields:
-                str_fields = ', '.join(klass._text_search_fields)
+            # if klass._text_search_fields:
+            #     str_fields = ', '.join(klass._text_search_fields)
 
-                template += f"""
-                #### Searchable fields
+            #     template += f"""
+            #     #### Searchable fields
 
-                {str_fields}
-                """
-            else:
-                template += """
-                #### Searchable fields
+            #     {str_fields}
+            #     """
+            # else:
+            #     template += """
+            #     #### Searchable fields
 
-                No searchable fields available for this collection.
-                """
+            #     No searchable fields available for this collection.
+            #     """
 
-            if klass.extra_instructions:
-                template += f"""
-                #### Extra instructions
+            # if klass.extra_instructions:
+            #     template += f"""
+            #     #### Extra instructions
 
-                {klass.extra_instructions}
-                """
+            #     {klass.extra_instructions}
+            #     """
 
         return template
 
     def factory(self, context, request):
         return QueryRunner()
 
-    def add_tools(self, manager: ToolManager):
+    def _add_tools_to(self, manager: ToolManager):
         from mcp_server.server.toolset.methods import ToolsetMethodCaller
         
         def _query(collection: str, search_pipeline: list[dict] | None = None):
@@ -246,7 +246,6 @@ class QueryTool:
         tool.context_kwarg = '_context'
         tool.fn = ToolsetMethodCaller(self.factory, 'query', '_context', False)
         return [tool]
-
 
 
 def _initialize_query_tools():
@@ -275,4 +274,4 @@ def _initialize_query_tools():
         querytool.add_model(klass)
 
     for server, tool in server_tools.items():
-        server.register_mcptoolset(tool)
+        server.register_toolset(tool)

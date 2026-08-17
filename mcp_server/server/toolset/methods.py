@@ -131,7 +131,7 @@ class MCPToolset(metaclass=ToolsetRegistry):
         if self.server is None:
             self.server = DJANGO_MCP_SERVER
 
-    def _add_tools(self, manager: ToolManager):
+    def _add_tools_to(self, manager: ToolManager):
         returned_tools: list[Tool] = []
 
         values = inspect.getmembers(self, predicate=inspect.ismethod)
@@ -151,4 +151,3 @@ class MCPToolset(metaclass=ToolsetRegistry):
             tool.fn = ToolsetMethodCaller(self.__class__, name, tool.context_kwarg, forward_context=forward_context)
             returned_tools.append(tool)
         return returned_tools
-

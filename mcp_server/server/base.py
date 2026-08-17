@@ -17,6 +17,7 @@ from mcp_server.server.views import (
     DrfRetrieveViewTool,
     DrfUpdateViewTool,
 )
+from mcp_server.typings import TypeToolset
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,8 @@ class DjangoMcpServer(MCPServer):
             #     except Exception as e:
             #         raise ValueError(f"Could not determine body schema for {view_class.__name__}. Please provide a body_schema argument.") from e
 
+    def register_toolset(self, toolset: TypeToolset):
+        return toolset._add_tools_to(self._tool_manager)
 
     def register_drf_list_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
         """

@@ -2,7 +2,8 @@ import pytest
 from django.db.models.query import QuerySet
 
 from mcp_server.server.toolset.queries import ModelQueryToolset
-from tests.testapp.models import SimpleModel, SimpleModelToolFromTestApp
+from tests.testapp.mcp import SimpleModelToolFromTestApp
+from tests.testapp.models import SimpleModel
 
 
 @pytest.fixture

@@ -9,5 +9,8 @@ class McpServerConfig(AppConfig):
     def ready(self):
         autodiscover_modules('mcp')
         
-        from .djangomcp import init
-        init()
+        # from .djangomcp import init
+        # init()
+        
+        from mcp_server.server.discovery import initialize_toolsets
+        initialize_toolsets()

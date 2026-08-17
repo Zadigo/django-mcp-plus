@@ -456,7 +456,7 @@ class MCPToolset(metaclass=ToolsetMeta):
         return ret
 
 
-def init():
+def tinit():
     # Register the tools
     for _name, cls in ToolsetMeta.iter_all():
         if cls.mcp_server is None:
