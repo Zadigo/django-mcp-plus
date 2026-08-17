@@ -12,7 +12,6 @@ from mcp import Tool
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 from rest_framework.serializers import Serializer
 
-from mcp_server.server.base import DJANGO_MCP_SERVER
 from mcp_server.typings import TypeDjangoMcpServer, TypeToolsetMethod
 
 logger = logging.getLogger(__name__)
@@ -115,6 +114,8 @@ class MCPToolset(metaclass=AbstractToolset):
     server: ClassVar[TypeDjangoMcpServer] = None
 
     def __init__(self, context = None, request = None):
+        from mcp_server.server.base import DJANGO_MCP_SERVER
+        
         self.context = context
         self.request = request
 

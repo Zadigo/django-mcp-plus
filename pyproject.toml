@@ -9,6 +9,7 @@ keywords = ["django", "mcp", "model context protocol", "tools"]
 dependencies = [
     "django>=6.1",
     "djangorestframework>=3.18.0",
+    "djangorestframework-simplejwt>=5.5.1",
     "httpx2>=2.10.0",
     "mcp>=2.0.0",
 ]
