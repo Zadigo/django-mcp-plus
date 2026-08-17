@@ -134,7 +134,6 @@ class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
         )
 
         try:
-            # Create the view
             return self.view(request).data
         except Exception as e :
             raise e

@@ -25,12 +25,16 @@ MCP_SESSION_ID_HDR = "Mcp-Session-Id"
 
 
 class DjangoMcpServer(MCPServer):
-    """Main entrypoint 
+    """Main entrypoint for the Django MCP server. This class is responsible for 
+    handling incoming requests and routing them to the appropriate toolset methods.
+
+    You can use the default instance `DJANGO_MCP_SERVER` or create mutliple instances of the 
+    server with different configurations.
     
     Args:
-        name (str)
-        instructons (str)
-        stateless (bool)
+        name (str | None): The name of the server. Defaults to 'django_mcp_server'.
+        instructions (str | None): Instructions for the server. Defaults to None.
+        stateless (bool): Whether the server is stateless or not. Defaults to False.
     """
 
     def __init__(self, name: str | None = None, instructions: str | None = None, stateless: bool = False):
@@ -41,7 +45,8 @@ class DjangoMcpServer(MCPServer):
         engine = import_module(settings.SESSION_ENGINE)
         self.session_store: SessionStore = engine.SessionStore
 
-        server_instruction_tool = getattr(settings, "DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL", True)
+        # Add rquired tools when the the server is initialized
+        server_instruction_tool = getattr(settings, 'DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL', True)
         if server_instruction_tool:
             async def _get_server_instructions():
                 return self._mcp_server.instructions or ""
@@ -101,6 +106,12 @@ class DjangoMcpServer(MCPServer):
             #         raise ValueError(f"Could not determine body schema for {view_class.__name__}. Please provide a body_schema argument.") from e
 
     def register_toolset(self, toolset: TypeToolset):
+        """Register a toolset with the server. This method will add all 
+        the tools defined in the toolset to the server's tool manager.
+        
+        Args:
+            toolset (TypeToolset): The toolset class to register.
+        """
         return toolset._add_tools_to(self._tool_manager)
 
     def register_drf_list_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
@@ -116,16 +127,15 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def template_func(id, body: dict):
+        async def dummy(id, body: dict):
             """Template function to call the ListAPIView's get method."""
 
         tool = self._tool_manager.add_tool(
-            fn=template_func,
+            fn=dummy,
             name=name or f'{view_class.__name__}_ListTool',
             description=instructions or view_class.__doc__,
         )
 
-        # Register the view class with the toolset method using DrfListViewTool
         tool.fn = sync_to_async(DrfListViewTool(view_class))(
             self,
             view_class,
@@ -145,18 +155,17 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def template_func(id, body: dict):
+        async def dummy(id, body: dict):
             pass
 
         tool = self._tool_manager.add_tool(
-            fn=template_func,
+            fn=dummy,
             name=name or f'{view_class.__name__}_UpdateTool',
             description=instructions or view_class.__doc__,
         )
 
         # Register the view class with the toolset method using DrfUpdateViewTool
         tool.fn = sync_to_async(DrfUpdateViewTool(self, view_class, actions=actions))
-
         self._extract_schema(tool, body_schema, view_class)
 
     def register_drf_create_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
@@ -172,18 +181,17 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def template_func(id, body: dict):
+        async def dummy(id, body: dict):
             pass
 
         tool = self._tool_manager.add_tool(
-            fn=template_func,
+            fn=dummy,
             name=name or f'{view_class.__name__}_CreateTool',
             description=instructions or view_class.__doc__,
         )
 
         # Register the view class with the toolset method using DrfCreateViewTool
         tool.fn = sync_to_async(DrfCreateViewTool(self, view_class, actions=actions))
-
         self._extract_schema(tool, body_schema, view_class)
 
     def register_drf_retrieve_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
@@ -199,18 +207,17 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def template_func(id, body: dict):
+        async def dummy(id, body: dict):
             pass
 
         tool = self._tool_manager.add_tool(
-            fn=template_func,
+            fn=dummy,
             name=name or f'{view_class.__name__}_RetrieveTool',
             description=instructions or view_class.__doc__,
         )
 
         # Register the view class with the toolset method using DrfRetrieveViewTool
         tool.fn = sync_to_async(DrfRetrieveViewTool(self, view_class, actions=actions))
-
         self._extract_schema(tool, body_schema, view_class)
 
     def register_drf_delete_tool(self, view_class: type[APIView], name: str | None = None, instructions: str | None = None, body_schema: dict | None = None, actions: dict | None = None):
@@ -235,9 +242,7 @@ class DjangoMcpServer(MCPServer):
             description=instructions or view_class.__doc__,
         )
 
-        # Register the view class with the toolset method using DrfDeleteViewTool
         tool.fn = sync_to_async(DrfDeleteViewTool(self, view_class, actions=actions))
-
         self._extract_schema(tool, body_schema, view_class)
 
 

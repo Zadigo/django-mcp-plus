@@ -6,7 +6,9 @@ from mcp_server.server.toolset.queries import (
 
 
 def initialize_toolsets():
-    """Function to initialize the toolsets and query tools for the Django MCP server."""
+    """Function that initializes all toolsets registered in the ToolsetRegistry. This function is
+    called as early as possible in (generally in the app's AppConfig.ready() method) to ensure that all toolsets are 
+    registered with the MCP server before any requests are handled.""" 
     for _, klass in ToolsetRegistry.iterate_all_values():
         if klass.server is None:
             klass.server = DJANGO_MCP_SERVER

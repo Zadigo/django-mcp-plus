@@ -27,6 +27,10 @@ _OUTPUT_FORMATS: dict[str, BaseRenderer] = {}
 
 
 class QueryRunner:
+    """A class that serves as a runner for executing queries on the available tool models.
+    It takes a dictionary of tool models and provides a method to query the specified collection
+    using the provided search pipeline. The results are returned in the specified output format."""
+
     def __init__(self, models: dict[str, TypeModelToolset], context: Context | None = None, request: HttpRequest | None = None):
         self.query_tool_models = models
         self.context = context
@@ -102,24 +106,32 @@ class QueryRunner:
 
 
 class QueryTool:
-    """A class that serves as a tool for querying data available in the server.
+    """A proxy class that serves as a tool for querying data available in the server. It provides
+    instructions for querying data available in the server.
     
     Attributes:
-        server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class variable that is shared across all instances of the toolset.
-        _models (dict[Model, type[ModelQueryToolset]]): A dictionary that maps the model class to the ModelQueryToolset subclass that is associated with it. This is a class variable that is shared across all instances of the toolset.
+        server (TypeDjangoMcpServer): The MCP server instance that this 
+            toolset is associated with. This is a class variable that is 
+            shared across all instances of the toolset.
+        _models (dict[Model, type[TypeModelToolset]]): A dictionary that maps the 
+            model class to the ModelQueryToolset subclass that is associated with it. This is a class 
+            variable that is shared across all instances of the toolset.
     """
 
     def __init__(self):
         self._models: dict[str, type[TypeModelToolset]] = {}
 
-    def add_model(self, query_tool: type[TypeModelToolset]):
-        if query_tool.output_format not in _OUTPUT_FORMATS:
-            raise ValueError(f"Output format '{query_tool.output_format}' is not supported. Supported formats are: {list(_OUTPUT_FORMATS.keys())}")
-        self._models[query_tool.model._meta.model_name] = query_tool
+    def add_model_toolset(self, model_toolset: type[TypeModelToolset]):
+        if model_toolset.output_format not in _OUTPUT_FORMATS:
+            raise ValueError(
+                f"Output format '{model_toolset.output_format}' is not supported. "
+                f"Supported formats are: {list(_OUTPUT_FORMATS.keys())}"
+            )
+        self._models[model_toolset.model._meta.model_name] = model_toolset
 
     def get_instructions(self):
         """Returns a string containing instructions for using the query tool. 
-        The instructions include information about the available collections to query, 
+        The instructions include information about the available collections/models to query, 
         the fields that can be searched, and any extra instructions provided by the toolset."""
 
         template = """
@@ -188,7 +200,9 @@ class QueryTool:
 
 
 def initialize_query_tools():
-    """Function to initialize the query tools for the Django MCP server."""
+    """Specific function used to register ModelQueryToolset subclasses to the Django MCP server. 
+    This function is called during the server initialization process to ensure that all 
+    available query tools are properly registered and ready for use."""
     global _OUTPUT_FORMATS
     
     renderer_klasses: list[BaseRenderer] = []
@@ -206,11 +220,13 @@ def initialize_query_tools():
 
         querytool = server_tools.get(klass.server)
 
+        # Attach the query tool to the 
+        # server if it doesn't already exist
         if querytool is None:
             querytool = QueryTool()
             server_tools[klass.server] = querytool
 
-        querytool.add_model(klass)
+        querytool.add_model_toolset(klass)
 
-    for server, tool in server_tools.items():
-        server.register_toolset(tool)
+    for server, toolset in server_tools.items():
+        server.register_toolset(toolset)

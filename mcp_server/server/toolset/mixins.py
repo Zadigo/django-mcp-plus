@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class ToolsetRegistry(type):
+    """A registry that tracks all the toolsets that are registered with the MCP server."""
+
     registry: ClassVar[dict[str, type[McpMethodsToolset]]] = {}
 
     def __init__(cls, name, bases, attrs):
@@ -31,13 +33,15 @@ class ToolsetRegistry(type):
 
 
 class McpMethodsToolset(metaclass=ToolsetRegistry):
-    """A class that provides a set of tools to to create tools that can 
-    be used by the MCP server. This class is meant to be subclassed and 
-    extended with additional tools::
+    """Toolset class used to create plain methods that can be used by the MCP server. This class is meant 
+    to be subclassed and extended with additional tools::
 
         class MyToolset(McpMethodsToolset):
-            def my_tool(self):
-                pass
+            def example_tool(self):
+                return "Hello, World!"
+
+            def another_tool(self, arg1: int, arg2: int):
+                return arg1 + arg2
                 
     Attributes:
         server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class 
@@ -55,8 +59,9 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
             self.server = DJANGO_MCP_SERVER
 
     def _add_tools_to(self, manager: ToolManager):
-        """Iterates of the methods of the class and adds the tools 
-        to the MCP server manager tools."""
+        """Function that iterates over all methods of the class and adds them 
+        to the given ToolManager instance. This function is called by the MCP 
+        server when the toolset is registered."""
         returned_tools: list[Tool] = []
 
         values = inspect.getmembers(self, predicate=inspect.ismethod)
@@ -73,19 +78,19 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
             else:
                 forward_context = True
 
+            # If the tool has a context_kwarg, we need to wrap the method in a ToolsetMethodCaller
             tool.fn = ToolsetMethodCaller(self.__class__, name, tool.context_kwarg, forward_context=forward_context)
             returned_tools.append(tool)
         return returned_tools
 
 
 class ModelQueryRegistry(type):
-    """A registry for all subclasses of ModelQueryToolset. This metaclass 
-    is used to keep track of all subclasses of ModelQueryToolset and their associated 
-    models. It also provides a way to get the published models for a given 
-    server instance.
+    """A registry that tracks all the subclasses of ModelQueryToolset. This is used to keep track of 
+    all the toolsets that are registered specifically with ModelQueryToolset with the MCP server.
     
     Attributes:
-        registry (dict[str, ModelQueryToolset]): A dictionary that maps the name of the subclass to the subclass itself. This is used to keep track of all subclasses of ModelQueryToolset
+        registry (dict[str, ModelQueryToolset]): A dictionary that maps the name of the 
+            subclass to the subclass itself. This is used to keep track of all subclasses of ModelQueryToolset
     """
 
     registry: ClassVar[dict[str, ModelQueryToolset]] = {}
@@ -107,14 +112,16 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
     extended with additional tools::
 
         class MyToolset(ModelQueryToolset):
-            def my_tool(self):
-                pass
+            model = SomeModel
+
+            def get_queryset(self):
+                return self.model.all()
                 
     Attributes:
         server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class 
-                                      variable that is shared across all instances of the toolset.
+                variable that is shared across all instances of the toolset.
         model (type[Model]): The Django model that this toolset is associated with. This is a class variable that is 
-                             shared across all instances of the toolset.
+                shared across all instances of the toolset.
         exclude_fields (Sequence[str]): A sequence of field names to exclude from the query results.
         fields (Sequence[str]): A sequence of field names to include in the query results.
         search_fields (Sequence[str]): A sequence of field names to use for searching the query results.
@@ -134,7 +141,7 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
     output_format: str = 'json'
     output_as_resource: bool = False
 
-    def __init__(self, context=None, request: HttpRequest = None):
+    def __init__(self, context: Context | None = None, request: HttpRequest = None):
         self.context = context
         self.request = request
 
