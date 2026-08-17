@@ -2,14 +2,20 @@ import logging
 from collections.abc import Sequence
 from typing import ClassVar
 
+from asgiref.sync import sync_to_async
+from django.conf import settings
 from django.db.models import CharField, Model, TextField
 from django.http import HttpRequest
+from django.utils.module_loading import import_string
+from rest_framework.renderers import BaseRenderer
 
+from mcp_server.server.base import DJANGO_MCP_SERVER
+from mcp_server.server.toolset.methods import ToolManager
 from mcp_server.typings import TypeDjangoMcpServer
 
 logger = logging.getLogger(__name__)
 
-class AbstractToolset(type):
+class ModelQueryRegistry(type):
     """A registry for all subclasses of ModelQueryToolset. This metaclass 
     is used to keep track of all subclasses of ModelQueryToolset and their associated 
     models. It also provides a way to get the published models for a given 
@@ -27,9 +33,12 @@ class AbstractToolset(type):
         if name != 'ModelQueryToolset':
             cls.registry[name] = cls
 
+    @staticmethod
+    def iterate_all_values():
+        yield from ModelQueryRegistry.registry.items()
 
 
-class ModelQueryToolset(metaclass=AbstractToolset):
+class ModelQueryToolset(metaclass=ModelQueryRegistry):
     """A class that provides a set of tools to to create tools that can 
     be used by the MCP server. This class is meant to be subclassed and 
     extended with additional tools::
@@ -144,3 +153,126 @@ class ModelQueryToolset(metaclass=AbstractToolset):
         if self.model is None:
             raise ValueError("ModelQueryToolset subclasses must define a model class variable.")
         return self.model._default_manager.all()
+
+
+_OUTPUT_FORMATS: dict[str, BaseRenderer] = {}
+
+
+class QueryRunner:
+    pass 
+
+
+class QueryTool:
+    """A class that serves as a tool for querying data available in the server.
+    
+    Attributes:
+        server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class variable that is shared across all instances of the toolset.
+        _models (dict[Model, type[ModelQueryToolset]]): A dictionary that maps the model class to the ModelQueryToolset subclass that is associated with it. This is a class variable that is shared across all instances of the toolset.
+    """
+
+    def __init__(self):
+        self._models: dict[Model, type[ModelQueryToolset]] = {}
+
+    def add_model(self, query_tool: type[ModelQueryToolset]):
+        if query_tool.output_format not in _OUTPUT_FORMATS:
+            raise ValueError(f"Output format '{query_tool.output_format}' is not supported. Supported formats are: {list(_OUTPUT_FORMATS.keys())}")
+        self._models[query_tool.model] = query_tool
+
+    def get_instructions(self):
+        """Returns a string containing instructions for using the query tool. 
+        The instructions include information about the available collections to query, 
+        the fields that can be searched, and any extra instructions provided by the toolset."""
+
+        template = """
+        Use this tool to query data available in the server. 
+        The `collection` parameter specifies the collection to query and the `search_pipeline` parameter is 
+        a list of stage of a MongoDB aggregation pipeline with restricted syntax.
+        
+        ## Available collections to query
+        """
+
+        schema = ''
+
+        for name, klass in self._models.items():
+            template += f"""
+            ### '{name}' collection [{klass.__name__}]
+
+            ```json
+            {schema}
+            ```
+            """
+
+            if klass._text_search_fields:
+                str_fields = ', '.join(klass._text_search_fields)
+
+                template += f"""
+                #### Searchable fields
+
+                {str_fields}
+                """
+            else:
+                template += """
+                #### Searchable fields
+
+                No searchable fields available for this collection.
+                """
+
+            if klass.extra_instructions:
+                template += f"""
+                #### Extra instructions
+
+                {klass.extra_instructions}
+                """
+
+        return template
+
+    def factory(self, context, request):
+        return QueryRunner()
+
+    def add_tools(self, manager: ToolManager):
+        from mcp_server.server.toolset.methods import ToolsetMethodCaller
+        
+        def _query(collection: str, search_pipeline: list[dict] | None = None):
+            pass
+
+        name = 'query_data_collections'
+
+        tool = manager.add_tool(
+            fn=sync_to_async(_query),
+            name=name,
+            description=self.get_instructions()
+        )
+
+        tool.context_kwarg = '_context'
+        tool.fn = ToolsetMethodCaller(self.factory, 'query', '_context', False)
+        return [tool]
+
+
+
+def _initialize_query_tools():
+    """Function to initialize the query tools for the Django MCP server."""
+    global _OUTPUT_FORMATS
+    
+    renderer_klasses: list[BaseRenderer] = []
+    renderers: list[str] = getattr(settings, 'DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES', ['rest_framework.renderers.JSONRenderer'])
+    for value in renderers:
+        klass = import_string(value)
+        renderer_klasses.append(klass)
+
+    _OUTPUT_FORMATS = {renderer_class.format: renderer_class for renderer_class in renderer_klasses}
+
+    server_tools: dict[TypeDjangoMcpServer, QueryTool] = {}
+
+    for _, klass in ModelQueryRegistry.iterate_all_values():
+        klass.server = klass.server or DJANGO_MCP_SERVER
+
+        querytool = server_tools.get(klass.server)
+
+        if querytool is None:
+            querytool = QueryTool()
+            server_tools[klass.server] = querytool
+
+        querytool.add_model(klass)
+
+    for server, tool in server_tools.items():
+        server.register_mcptoolset(tool)

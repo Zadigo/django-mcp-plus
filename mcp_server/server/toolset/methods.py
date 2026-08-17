@@ -2,11 +2,12 @@ import contextvars
 import functools
 import inspect
 import logging
-from collections.abc import Sequence
+from collections.abc import Coroutine, Sequence
 from types import SimpleNamespace
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import pydantic
+from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
 from mcp import Tool
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
@@ -41,7 +42,7 @@ class ToolsetMethodCaller:
         self.context_kwarg = context_kwarg
         self.forward_context = forward_context
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Coroutine[Any, Any, list[Any]]:
         # Create an instance of the toolset class, passing in the context 
         # and request objects as keyword arguments. The context object is 
         # retrieved from the kwargs dictionary using the context_kwarg attribute, 
@@ -53,7 +54,11 @@ class ToolsetMethodCaller:
             request=DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
         )
 
-        method = getattr(instance, self.method_name)
+        method = sync_to_async(SyncToolMethodCaller(getattr(instance, self.method_name)))
+        if not self.forward_context:
+            kwargs.pop(self.context_kwarg, None)
+
+        return method(*args, **kwargs)
 
 
 class SyncToolMethodCaller:
@@ -87,8 +92,8 @@ class SyncToolMethodCaller:
             return values
 
 
-class AbstractToolset(type):
-    registry: ClassVar[dict[str, type]] = {}
+class ToolsetRegistry(type):
+    registry: ClassVar[dict[str, type[MCPToolset]]] = {}
 
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
@@ -96,8 +101,12 @@ class AbstractToolset(type):
         if name != 'MCPToolset' and issubclass(cls, MCPToolset):
             cls.registry[name] = cls
 
+    @staticmethod
+    def iterate_all_values():
+        yield from ToolsetRegistry.registry.items()
 
-class MCPToolset(metaclass=AbstractToolset):
+
+class MCPToolset(metaclass=ToolsetRegistry):
     """A class that provides a set of tools to to create tools that can 
     be used by the MCP server. This class is meant to be subclassed and 
     extended with additional tools::

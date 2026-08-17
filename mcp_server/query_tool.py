@@ -653,33 +653,35 @@ class QueryTool:
 
     def get_instructions(self):
         ret = f"""
-Use this tool to query data available in the server. 
-The `collection` parameter specifies the collection to query and the `search_pipeline` parameter is 
-a list of stage of a MongoDB aggregation pipeline with restricted syntax.
+        Use this tool to query data available in the server. 
+        The `collection` parameter specifies the collection to query and the `search_pipeline` parameter is 
+        a list of stage of a MongoDB aggregation pipeline with restricted syntax.
 
-## MongoDB aggregation pipeline syntax supported
-{PIPELINE_DSL_SPEC}. 
+        ## MongoDB aggregation pipeline syntax supported
+        {PIPELINE_DSL_SPEC}. 
 
-## Available collections to query
-"""
+        ## Available collections to query
+        """
+
         for name, cls in self.query_tool_models.items():
             ret+=f"""
-### '{name}' collection
-Documents conform the following JSON Schema
-```json
-{generate_json_schema(cls.model, fields=cls.fields,
-                      exclude=cls.get_excluded_fields())}
-```
+        ### '{name}' collection
+        Documents conform the following JSON Schema
+        ```json
+        
+        {generate_json_schema(cls.model, fields=cls.fields,
+                            exclude=cls.get_excluded_fields())}
+        ```
 
-"""
-            if cls.get_text_search_fields():
-                ret += "Full text search is supported on the following fields: " + ", ".join(
-                    cls.get_text_search_fields()) + "."
-            else:
-                ret += "Full text search is not supported on this collection."
+        """
+        if cls.get_text_search_fields():
+            ret += "Full text search is supported on the following fields: " + ", ".join(
+                cls.get_text_search_fields()) + "."
+        else:
+            ret += "Full text search is not supported on this collection."
 
-            if cls.extra_instructions:
-                ret += f"\n\nExtra instructions for this collection:\n\n{cls.extra_instructions}\n"
+        if cls.extra_instructions:
+            ret += f"\n\nExtra instructions for this collection:\n\n{cls.extra_instructions}\n"
         return ret
 
     def executor_factory(self, context, request):
