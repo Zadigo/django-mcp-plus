@@ -228,7 +228,6 @@ class MyModelView(CreateAPIView):
     A view to create MyModel instances
     """
     serializer_class=MySerializer
-
 ```
 
 notice that the docstring of the view is used as instructions for the model.
@@ -241,7 +240,6 @@ class MyModelView(CreateAPIView):
     A view to create MyModel instances
     """
     serializer_class=MySerializer
-
 ```
 
 Finally, you can register after hand in mcp.py for example with:
