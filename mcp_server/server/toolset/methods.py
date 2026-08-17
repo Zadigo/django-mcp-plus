@@ -117,7 +117,7 @@ class MCPToolset(metaclass=ToolsetRegistry):
                 
     Attributes:
         server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class 
-                                      variable that is shared across all instances of the toolset.
+            variable that is shared across all instances of the toolset.
     """
 
     server: ClassVar[TypeDjangoMcpServer] = None
@@ -132,6 +132,8 @@ class MCPToolset(metaclass=ToolsetRegistry):
             self.server = DJANGO_MCP_SERVER
 
     def _add_tools_to(self, manager: ToolManager):
+        """Iterates of the methods of the class and adds the tools 
+        to the MCP server manager tools."""
         returned_tools: list[Tool] = []
 
         values = inspect.getmembers(self, predicate=inspect.ismethod)
