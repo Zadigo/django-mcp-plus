@@ -112,7 +112,7 @@ class ViewMixin:
             raise e
 
 
-class DrfListViewTool(ViewMixin, BaseApiViewTool):
+class DrfListViewTool(ViewMixin, BaseApiViewTool[ListAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[ListAPIView], actions = None):
         if not issubclass(view_class, ListAPIView):
             raise TypeError("view_class must be a subclass of ListAPIView")

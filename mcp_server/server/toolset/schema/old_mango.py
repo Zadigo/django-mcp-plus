@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 from django.db.models import (
     Avg,
@@ -40,6 +41,7 @@ The syntax to query is a subset of MangoDB aggregation pipeline JSON with suppor
 All other stages NOT SUPPORTED : $addFields, $set, $unset, $unwind ...
 """
 
+@warnings.deprecated("Using this until the refactoring of the schema generator is complete.")
 def apply_json_mango_query(queryset: QuerySet, pipeline: list[dict], allowed_models: list = None, extended_operators: list = None, text_search_fields: list | str = '*'):
     """
     Apply a JSON-like query to a Django QuerySet using a subset of MangoDB aggregation pipeline syntax.
