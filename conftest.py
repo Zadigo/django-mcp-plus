@@ -72,3 +72,10 @@ def http_request():
 def model_instance():
     from tests.testapp.models import SimpleModel
     return SimpleModel.objects.create(name="Test 1")
+
+
+@pytest.fixture
+def model_qs():
+    from tests.testapp.models import SimpleModel
+    SimpleModel.objects.create(name="Test 1")
+    return  SimpleModel.objects.all()
