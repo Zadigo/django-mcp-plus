@@ -115,3 +115,14 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# Django MCP Plus settings
+
+DJANGO_MCP_PLUS_ENDPOINT = 'mcp'
+
+
+DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = []
+
+
+DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = []

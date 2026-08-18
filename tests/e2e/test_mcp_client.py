@@ -5,7 +5,7 @@ from mcp.client.streamable_http import streamable_http_client
 async def main():
     # Connect to a streamable HTTP server
     async with (
-        streamable_http_client("http://localhost:8000/mcpunsecured") as (read_stream, write_stream, _), 
+        streamable_http_client("http://localhost:8000/mcp/") as (read_stream, write_stream), 
         ClientSession(read_stream, write_stream) as session
     ):
         # Initialize the connection
