@@ -1,6 +1,6 @@
 import pytest
 
-from mcp_server.server.toolset.schema_generators import json_schema
+from mcp_server.server.toolset.schema.json_generator import json_schema
 
 
 @pytest.mark.django_db

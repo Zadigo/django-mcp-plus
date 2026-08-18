@@ -12,12 +12,13 @@ dependencies = [
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular>=0.30.0",
     "httpx2>=2.10.0",
-    "mcp>=2.0.0",
+    "mcp[cli]>=2.0.0",
 ]
 
 [dependency-groups]
 dev = [
     "factory-boy>=3.3.3",
+    "google-adk>=2.7.1",
     "pytest>=9.1.1",
     "pytest-aio>=2.1.7",
     "pytest-cov>=7.1.0",
