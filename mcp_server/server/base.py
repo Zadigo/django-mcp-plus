@@ -49,7 +49,7 @@ class DjangoMcpServer(MCPServer):
         server_instruction_tool = getattr(settings, 'DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL', True)
         if server_instruction_tool:
             async def _get_server_instructions():
-                return self._mcp_server.instructions or ""
+                return self.instructions or ""
             
             self._tool_manager.add_tool(
                 fn=_get_server_instructions,
