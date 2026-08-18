@@ -42,6 +42,7 @@ markers = [
     "api: marks tests as api tests",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "mango: marks tests as mango query tests",
 ]
 
 [tool.pytest_env]

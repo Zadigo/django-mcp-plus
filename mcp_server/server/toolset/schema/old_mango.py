@@ -96,7 +96,14 @@ def apply_json_mango_query(queryset: QuerySet, pipeline: list[dict], allowed_mod
                     q &= _parse_match(match_stage, extended_operators, lookup_alias_map, text_search_fields)
                 queryset = queryset.filter(q)
             else:
-                queryset = queryset.filter(_parse_match(stage["$match"], extended_operators, lookup_alias_map, text_search_fields=[]))
+                queryset = queryset.filter(
+                    _parse_match(
+                        stage["$match"],
+                        extended_operators, 
+                        lookup_alias_map, 
+                        text_search_fields=[]
+                        )
+                    )
 
         elif "$search" in stage:
             search = stage["$search"]

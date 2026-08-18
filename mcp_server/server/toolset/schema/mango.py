@@ -18,7 +18,7 @@ def build_text_search_query(search_value: str, fields: Sequence[str]):
     return q1
 
 
-def parse_match(matched: dict[str, str | dict[str, Any]], extended_operators, lookup_map: dict[str, str], text_search_fields: Sequence[str] | None = None):
+def parse_match(matched: dict[str, str | dict[str, Any]], extended_operators: Sequence[str], lookup_map: dict[str, str], text_search_fields: Sequence[str] | None = None):
     if '$and' in matched:
         return models.Q(*[
             parse_match(condition, extended_operators, lookup_map) 
@@ -49,10 +49,10 @@ def parse_match(matched: dict[str, str | dict[str, Any]], extended_operators, lo
     for field, condition in matched.items():
         field = translate_field(field , lookup_map)
 
-        if isinstance(field, dict):
+        if isinstance(condition, dict):
             for operation, value in condition.items():
                 if operation.startswith('$'):
-                    operation_name = operation[1:]
+                    operation_name = operation.removeprefix('$')
 
                     negate = False
                     if operation_name == 'ne':
@@ -66,18 +66,20 @@ def parse_match(matched: dict[str, str | dict[str, Any]], extended_operators, lo
                         key = f"{field}__isnull"
                         value = True
                     elif operation_name in ['eq', 'gt', 'gte', 'lt', 'lte', 'in']:
-                        final_operation = "" if operation_name=="eq" else f"__{operation_name}"
+                        final_operation = "" if operation_name == "eq" else f"__{operation_name}"
                         key = f"{field}{final_operation}"
                     elif operation_name == 'regex':
                         key = f"{field}__regex"
                     elif operation_name in extended_operators:
                         key = f"{field}__{operation_name}"
                     else:
-                        raise ValueError(error_message.format_map(operation=operation_name))
+                        raise ValueError(error_message.format(operation=operation_name))
 
                     filterfunc &= ~models.Q(**{key: value}) if negate else models.Q(**{key: value})
                 else:
-                    raise ValueError(error_message.format_map(operation=operation_name))
+                    raise ValueError(
+                        error_message.format(operation=operation)
+                    )
         else:
             filterfunc &= models.Q(**{field: condition})
     return filterfunc
@@ -93,6 +95,7 @@ def translate_field(field: str, lookup_map: dict[str, str]):
             return f"{lookup_map[lhv]['prefix']}__{rhv}"
         else:
             raise ValueError(f"Unknown lookup alias '{lhv}', ensure it appears in the 'as' field of a previous $lookup")
+
     return field
 
 
@@ -307,6 +310,10 @@ def mangodb_query(queryset: QuerySet, pipeline: list[dict], allowed_models: list
                 'prefix': local_field.replace('_id', ''),
                 'foreign_field': foreign_field
             }
+
+    projection_fields = None
+    projection_mapping = None
+    skip_value = None
 
     # 2. 
     for i, stage in enumerate(pipeline):
