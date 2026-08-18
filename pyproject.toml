@@ -3,9 +3,34 @@ name = "django-mcp-plus"
 version = "0.1.0.dev1"
 requires-python = ">=3.14"
 description = "Django MCP Server is a Django extensions to easily enable AI Agents to interact with Django Apps through the Model Context Protocol it works equally well on WSGI and ASGI"
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 readme = "README.md"
 keywords = ["django", "mcp", "model context protocol", "tools"]
+authors = [
+    {name = "Omar BENHAMID", email = "omar.benhamid@smart-gts.com"},
+    {name = "John Pendenque", email = "pendenquejohn@gmail.com"},
+]
+maintainers = [
+    {name = "John Pendenque", email = "pendenquejohn@gmail.com"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",   
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: 3.16",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Natural Language :: English",
+    "Framework :: Django :: 6",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Development Status :: 3 - Alpha",
+]
 dependencies = [
     "django>=6.1",
     "django-cors-headers>=4.9.0",
@@ -94,3 +119,9 @@ source-exclude = [
     "reports/**",
     "examples/**"
 ]
+
+[project.urls]
+Homepage = "https://johnpm-consuting.fr"
+Documentation = "https://github.com/Zadigo/django-mcp-plus/wiki"
+Repository = "https://github.com/Zadigo/django-mcp-plus.git"
+Changelog = "https://github.com/Zadigo/django-mcp-plus/blob/main/CHANGELOG.md"
