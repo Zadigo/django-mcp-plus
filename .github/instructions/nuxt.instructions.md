@@ -1,5 +1,6 @@
 ---
-applyTo: "frontends/**"
+name: Nuxt Project Instructions
+applyTo: "**/*.vue"
 description: "Use when editing Nuxt frontends, including pages, components, stores, composables, tests, and app configuration under frontend/."
 ---
 # Frontend Instructions

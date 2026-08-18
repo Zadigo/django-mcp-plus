@@ -1,10 +1,10 @@
 ---
+name: VueUse Instructions
 applyTo: ["**/*.vue", "**/*.ts"]
 description: Code recommendations for Vue and Typescript files when implementing functions for @vueuse/core or related libraries.
 argument-hint: "Ask me to help with code completion, refactoring, or debugging in Vue and Typescript files related to @vueuse/core or similar libraries."
 target: vscode
 ---
-
 ## Coding Guidelines
 
 ### Typical Patterns

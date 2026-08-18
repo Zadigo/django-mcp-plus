@@ -1,4 +1,5 @@
 ---
+name: Project Instructions
 applyTo: "**/*"
 description: "Use when editing any part of the project, including frontends, backends, services, and shared libraries."
 ---
