@@ -8,7 +8,7 @@ description: "Use when editing Nuxt frontends, including pages, components, stor
 ## Tech stack
 
 * Nuxt 4 with Vue 3, TypeScript, and Nitro server engine
-  * Linting is done and preferred with Oxlint
+* Linting is done and preferred with Oxlint
 * Pinia for state management
 * VueUse for composables and patterns
 * Vitest for unit testing, Playwright for e2e testing, and ESLint for linting
@@ -19,68 +19,47 @@ description: "Use when editing Nuxt frontends, including pages, components, stor
 
 You are a Nuxt/Vue3 high-level code reviewer and contributor that helps maintain the frontend code quality and consistency by implementing production-level best practices (security, performance, accessibility, and maintainability). Keep in mind that the code should always also be SEO friendly and optimized for search engines.
 
-- The frontend applications are located under the `frontends/` directory. Respect the existing SSR strategy in `routeRules`; some paths are intentionally client-rendered.
-- Runtime backend URLs come from `NUXT_PUBLIC_PROD_DOMAIN` and `NUXT_PUBLIC_WS_PROD_DOMAIN`, with local defaults pointing to `127.0.0.1:8000`. Do not hardcode alternate API or websocket hosts in feature code.
-- Available scripts are defined in `frontends/**/package.json`. Use the narrowest one that matches the area you changed: `pnpm test:unit`, `pnpm test:nuxt`, `pnpm test:e2e`, or `pnpm lint`.
-- Keep frontend terminology aligned with the product docs in `frontends/**/README.md`: databases contain tables, and tables can expose relationships, triggers, functions, constraints, and windows.
-- When changing a route or rendering behavior, review `frontends/**/nuxt.config.ts` first so you do not accidentally break prerendered or SSR-disabled pages.
-- Prefer existing Nuxt patterns already present in `app/components`, `app/composables`, `app/stores`, and `app/pages` instead of introducing parallel conventions.
-- Global components are defined using the keyword `Base` for example [app/components/BaseNavbar.vue](app/components/BaseNavbar.vue) or are located under the folder [app/components/base/](app/components/base/). Use those as references for new components that should be globally available.
-- The folders in `app/components` are organized by domain or function, for example `app/components/databases/` contains components related to databases (`pages/databases`). Use those as references for where to place new components.
-- You can refer to the readme files located each application folder for more specific understanding of the frontend architecture and guidelines for each application: `frontends/**/README.md`
-- An important note, business logic are separated from the Vue files in composables under `layers/base/app/composables/use/` and are shared across the applications. You can refer to those as references for where to place new composables that contain business logic. These composables are shared with `mobile/nuxtmobile` leveraging Nuxt's `extends` property.
-- Composables will generally have the name of the object or domain they are related to, for example `useDatabase` for databases, `useTable` for tables, `useRelationships` for relationships, etc. You can refer to the existing composables in `app/composables/use/` as references for naming and structuring new composables.
-- Composable should be very task specific and not contain multiple unrelated functions. For example, if you need to create a composable related to databases, it should be named `useDatabase` and only contain functions related to database operations. If you have functions related to tables, they should go in a separate composable named `useTable`.
-
 **Global project structure**
 
-```
-frontends/
-├── nuxtapp/
-│   ├── app/
-│   │   ├── components/
-│   │   │   └── base/  <-- Base components that are globally available across the application, for example BaseButton.vue or BaseInput.vue
-│   │   ├── composables/
-│   │   │   └── use/  <-- business logic composables shared across applications
-│   │   ├── stores/
-│   │   ├── assets/
-│   │   └── utils/
-│   ├── pages/
-│   ├── public/
-│   ├── nuxt.config.ts
-│   ├── package.json
-│   └── README.md
-├── nuxtmobile/
-│   ├── app/
-│   │   ├── components/
-│   │   │   └── base/  <-- Base components that are globally available across the application, for example BaseButton.vue or BaseInput.vue
-│   │   ├── composables/
-│   │   │   └── use/  <-- business logic composables shared across applications
-│   │   ├── stores/
-│   │   ├── assets/
-│   │   └── utils/
-│   ├── pages/
-│   ├── public/
-│   ├── nuxt.config.ts
-│   ├── package.json
-│   └── README.md
-└── README.md
+The project is organized as a monorepo with multiple frontend applications, backend services, and infrastructure code. The frontend applications are located under the `frontends/` directory, while the backend services are located under the `services/` directory.
+
+```text
+monorepo
+├── docker-compose.yaml
+├── frontends
+│   ├── nuxtapp1
+│   │   └── README.md
+│   └── nuxtapp2
+│       └── README.md
+├── infrastructure
+│   ├── deploy
+│   └── docker
+├── pnpm-workspace.yaml
+├── README.md
+└── services
+    ├── djangoapp
+    │   └── README.md
+    └── goservice
+        └── README.md
 ```
 
-## Guidelines
+**infrastructure**
 
-## Canonical Resources
+The infrastructure directory contains deployment and docker configuration files for the entire monorepo.
 
-- https://nuxt.com/docs/4.x/directory-structure
-- https://nuxt.com/docs/4.x/guide
-- https://nuxt.com/docs/4.x/guide/best-practices/performance
-- https://nuxt.com/docs/4.x/api
-- https://vuejs.org/glossary/
-- https://vuejs.org/guide/best-practices/production-deployment.html
-- https://vuejs.org/guide/best-practices/performance.html
-- https://vuejs.org/guide/best-practices/accessibility.html
-- https://vuejs.org/guide/best-practices/security.html
-- https://vueuse.org/functions.html
+## General Guidelines
+
+- The frontend applications are located under the `frontends/` directory. Respect the existing SSR strategy in `routeRules`; some paths are intentionally client-rendered.
+- Available scripts are defined in `frontends/**/package.json`. Use the narrowest one that matches the area you changed: `pnpm test:unit`, `pnpm test:nuxt`, `pnpm test:e2e`, or `pnpm lint`.
+- Keep frontend terminology aligned with the product docs in `frontends/**/README.md`
+- When changing a route or rendering behavior, review `frontends/**/nuxt.config.ts` first so you do not accidentally break prerendered or SSR-disabled pages.
+- Prefer existing Nuxt patterns already present in `app/components`, `app/composables`, `app/stores`, and `app/pages` instead of introducing parallel conventions.
+- Global required components are defined using the keyword `base` for example `app/components/BaseNavbar.vue` or are located under the folder `app/components/base`. Use this as a reference for where to place new components that are globally available across the application.
+- The folders in `app/components` are organized by domain or function, for example `app/components/databases/` contains components related to databases (in reference to the page `pages/databases`). Use those as references for where to place new components.
+- You can refer to the readme files located each application folder for more specific understanding of the frontend architecture and guidelines for each application: `frontends/**/README.md`
+- An important note, business logic are separated from the Vue files in composables either under `layers/base/app/composables/use/` or `composables/use/` or `composables`. This practice declutters the Vue files and makes the business logic reusable across the application. Use this as a reference for where to place new composables.
+- Composables will generally have the name of the object or domain they are related to, for example `useDatabaseComposable` for databases, `useTableComposable` for tables, `useRelationshipsComposable` for relationships, etc.
+- Composable should be very task specific and not contain multiple unrelated functions. For example, if you need to create a composable related to databases, it should be named `useDatabaseComposable` and only contain functions related to database operations. If you have functions related to tables, they should go in a separate composable named `useTableComposable`.
 
 ## General Best Practices
 
@@ -92,7 +71,7 @@ frontends/
 - If you are unsure of what data to use for a variable, you can sporadically use the `faker` function in `@faker-js/faker` as a placeoholder based on the context of the code. For example, if you need a placeholder name for a user, you can use `const name = ref(faker.name.fullName())`. Use this only if the library is already installed and available in the codebase, and make sure to import it at the top of the file with `import { faker } from '@faker-js/faker'`.
 - Do not include `;` at the end of lines, as per the existing code style in the codebase.
 
-**SEO Guidelines**
+### SEO Best Practices
 
 - Ensure that all pages have appropriate meta tags, including title, description, and keywords. Use Nuxt's `useHead` property and `useSeoMeta` in page components to set these dynamically based on the content.
 - Leverage all the latest guidance from `@unhead/vue` for best practices on managing document head and SEO in Nuxt 4:
@@ -184,53 +163,16 @@ _Pre-Launch Checklist_
 - When using template refs, prefer `useTemplateRef` native Api as opposed to using a normal `ref`
 - Prefer this syntax when defining emits `defineEmits<{ [event: string]: any[] }>()`
 
-**VueUse motion patterns**
 
-Prefer these Vue use motion patterns for animations and transitions:
+## Canonical Resources
 
-```html
-<motion preset="VueUseMotions.FadeVisibleOnce">
-  ...
-</motion>
-```
-
-```html
-<motion-group preset="VueUseMotions.FadeVisibleOnce">
-  ...
-</motion-group>
-```
-
-```typescript
-export enum VueUseMotions {
-  Fade = 'fade',
-  FadeVisible = 'fadeVisible',
-  FadeVisibleOnce = 'fadeVisibleOnce',
-  RollTop = 'rollTop',
-  RollLeft = 'rollLeft',
-  RollRight = 'rollRight',
-  RollBottom = 'rollBottom',
-  RollVisibleTop = 'rollVisibleTop',
-  RollVisibleLeft = 'rollVisibleLeft',
-  RollVisibleRight = 'rollVisibleRight',
-  RollVisibleBottom = 'rollVisibleBottom',
-  RollVisibleOnceTop = 'rollVisibleOnceTop',
-  RollVisibleOnceLeft = 'rollVisibleOnceLeft',
-  RollVisibleOnceRight = 'rollVisibleOnceRight',
-  RollVisibleOnceBottom = 'rollVisibleOnceBottom',
-  Pop = 'pop',
-  PopVisible = 'popVisible',
-  PopVisibleOnce = 'popVisibleOnce',
-  SlideTop = 'slideTop',
-  SlideLeft = 'slideLeft',
-  SlideRight = 'slideRight',
-  SlideBottom = 'slideBottom',
-  SlideVisibleTop = 'slideVisibleTop',
-  SlideVisibleLeft = 'slideVisibleLeft',
-  SlideVisibleRight = 'slideVisibleRight',
-  SlideVisibleBottom = 'slideVisibleBottom',
-  SlideVisibleOnceTop = 'slideVisibleOnceTop',
-  SlideVisibleOnceLeft = 'slideVisibleOnceLeft',
-  SlideVisibleOnceRight = 'slideVisibleOnceRight',
-  SlideVisibleOnceBottom = 'slideVisibleOnceBottom'
-}
-```
+- https://nuxt.com/docs/4.x/directory-structure
+- https://nuxt.com/docs/4.x/guide
+- https://nuxt.com/docs/4.x/guide/best-practices/performance
+- https://nuxt.com/docs/4.x/api
+- https://vuejs.org/glossary/
+- https://vuejs.org/guide/best-practices/production-deployment.html
+- https://vuejs.org/guide/best-practices/performance.html
+- https://vuejs.org/guide/best-practices/accessibility.html
+- https://vuejs.org/guide/best-practices/security.html
+- https://vueuse.org/functions.html
