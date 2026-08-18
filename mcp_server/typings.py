@@ -17,4 +17,4 @@ type TypeToolset = McpMethodsToolset | ModelQueryToolset
 
 type TypeMcpToolset = McpMethodsToolset
 
-type TypeModelToolset = ModelQueryToolset
+type TypeModelQueryToolset = ModelQueryToolset

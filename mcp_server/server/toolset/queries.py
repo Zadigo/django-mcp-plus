@@ -18,7 +18,8 @@ from rest_framework.renderers import BaseRenderer
 
 from mcp_server.server.base import DJANGO_MCP_SERVER
 from mcp_server.server.toolset.mixins import ModelQueryRegistry
-from mcp_server.typings import TypeDjangoMcpServer, TypeModelToolset
+from mcp_server.server.toolset.schema.old_mango import apply_json_mango_query
+from mcp_server.typings import TypeDjangoMcpServer, TypeModelQueryToolset
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class QueryRunner:
     It takes a dictionary of tool models and provides a method to query the specified collection
     using the provided search pipeline. The results are returned in the specified output format."""
 
-    def __init__(self, models: dict[str, TypeModelToolset], context: Context | None = None, request: HttpRequest | None = None):
+    def __init__(self, models: dict[str, TypeModelQueryToolset], context: Context | None = None, request: HttpRequest | None = None):
         self.query_tool_models = models
         self.context = context
         self.request = request 
@@ -57,7 +58,20 @@ class QueryRunner:
         instance = toolset(self.context, self.request)
         qs = instance.get_queryset()
 
-        # Apply mango query 
+        # Apply mango query
+        result = apply_json_mango_query(
+            qs,
+            search_pipeline,
+            text_search_fields=instance.get_text_search_fields(),
+            allowed_models=instance.get_published_models(),
+            extended_operators=instance.extra_filters
+        )
+
+        if not result:
+            if instance.output_as_resource:
+                return ['No results found']
+            else:
+                return []
 
         renderer = _OUTPUT_FORMATS.get(toolset.output_format)
         if renderer is None:
@@ -66,7 +80,7 @@ class QueryRunner:
         if not isinstance(renderer, BaseRenderer):
             renderer = renderer()
 
-        _result = renderer.render(qs)
+        _result = renderer.render(result)
 
         if instance.output_as_resource:
             if not _result:
@@ -113,15 +127,15 @@ class QueryTool:
         server (TypeDjangoMcpServer): The MCP server instance that this 
             toolset is associated with. This is a class variable that is 
             shared across all instances of the toolset.
-        _models (dict[Model, type[TypeModelToolset]]): A dictionary that maps the 
+        _models (dict[Model, type[TypeModelQueryToolset]]): A dictionary that maps the 
             model class to the ModelQueryToolset subclass that is associated with it. This is a class 
             variable that is shared across all instances of the toolset.
     """
 
     def __init__(self):
-        self._models: dict[str, type[TypeModelToolset]] = {}
+        self._models: dict[str, type[TypeModelQueryToolset]] = {}
 
-    def add_model_toolset(self, model_toolset: type[TypeModelToolset]):
+    def add_model_toolset(self, model_toolset: type[TypeModelQueryToolset]):
         if model_toolset.output_format not in _OUTPUT_FORMATS:
             raise ValueError(
                 f"Output format '{model_toolset.output_format}' is not supported. "
