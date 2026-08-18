@@ -1,8 +1,5 @@
-from collections.abc import Sequence
-from typing import Any
-
 from django.db import models
-from django.db.models import ForeignKey, Model, QuerySet
+from django.db.models import ForeignKey, Model
 
 SCHEMA = {
     'description': '',
