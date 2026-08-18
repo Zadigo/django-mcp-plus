@@ -67,7 +67,7 @@ class QueryRunner:
         result = apply_json_mango_query(
             qs,
             search_pipeline,
-            text_search_fields=instance.get_text_search_fields(),
+            text_search_fields=instance.get_search_fields(),
             allowed_models=instance.get_published_models(),
             extended_operators=instance.extra_filters
         )

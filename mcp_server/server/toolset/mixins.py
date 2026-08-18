@@ -227,10 +227,6 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
             logger.debug(f"No text search fields found for model {cls.model.__name__}.")
 
         return cls._text_search_fields
-
-    @classmethod
-    def get_text_search_fields(cls):
-        return []
     
     def get_queryset(self):
         """Returns the queryset for the model associated with this toolset. You
