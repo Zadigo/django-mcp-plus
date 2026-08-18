@@ -31,9 +31,28 @@ def test_factory(model_query_toolset, http_request):
 
     assert isinstance(result, QueryRunner)
 
-
+@pytest.mark.parametrize(
+    'testcase',
+    [
+        (
+            'with search pipeline',
+            [{'$match': {'name': 'Test 1'}}]
+        ),
+        # Special case: when search_pipeline is None, 
+        # it should be treated as an empty list because
+        # it is passed as None by Tool.run
+        (
+            'without search pipeline',
+            None
+        )
+    ]
+)
 @pytest.mark.django_db
-async def test_pass_factory_in_method_caller(model_type):
+async def test_pass_factory_in_method_caller(model_type, testcase):
+    """This test observes how the factory method on 
+    the QueryTool class is called by the manager (which
+    arguments are passed by the Tool.run etc.) and
+    observer additional behaviours"""
     await model_type.objects.acreate(name='Test 1')
     
     class Celebrities(ModelQueryToolset):
@@ -45,13 +64,12 @@ async def test_pass_factory_in_method_caller(model_type):
     query_tool.add_model_toolset(Celebrities)
     query_tool._add_tools_to(manager)
 
+    _, pipeline = testcase
     result = await  manager.call_tool(
         'query_data_collections',
         arguments={
             'collection': 'simplemodel',
-            # 'search_pipeline': [
-            #     {'$match': {'name': 'Test 1'}}
-            # ]
+            'search_pipeline': pipeline if pipeline is not None else []
         },
         context=Context(),
     )

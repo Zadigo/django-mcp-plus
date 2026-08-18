@@ -40,7 +40,7 @@ class QueryRunner:
     def __repr__(self):
         return f"<QueryRunner models={list(self.query_tool_models.keys())}>"
 
-    def query(self, collection: str, search_pipeline: Sequence[dict] = ()):
+    def query(self, collection: str, search_pipeline: Sequence[dict] | None = None):
         """Queries the specified collection using the provided search pipeline and 
         returns the results in the specified output format.
         
@@ -62,6 +62,12 @@ class QueryRunner:
 
         instance: TypeModelQueryToolset = toolset(self.context, self.request)
         qs = instance.get_queryset()
+
+        # When the tool is called by Tool.run it passes additonal
+        # arguments: search_pipeline and _context. search_pipeline
+        # does comeback is None and this should be handled because
+        # it breaks the MCP when futher down
+        search_pipeline = search_pipeline or []
 
         # Apply mango query
         result = apply_json_mango_query(
