@@ -37,6 +37,9 @@ class QueryRunner:
         self.context = context
         self.request = request 
 
+    def __repr__(self):
+        return f"<QueryRunner models={list(self.query_tool_models.keys())}>"
+
     def query(self, collection: str, search_pipeline: Sequence[dict] = ()):
         """Queries the specified collection using the provided search pipeline and 
         returns the results in the specified output format.
@@ -53,9 +56,11 @@ class QueryRunner:
 
         toolset = self.query_tool_models.get(collection.lower(), None)
         if toolset is None:
-            raise ValueError(f"Collection '{collection}' is not available. Available collections are: {available_collections}")
+            raise ValueError(
+                f"Collection '{collection}' is not available. Available collections are: {available_collections}"
+            )
 
-        instance = toolset(self.context, self.request)
+        instance: TypeModelQueryToolset = toolset(self.context, self.request)
         qs = instance.get_queryset()
 
         # Apply mango query
@@ -120,8 +125,9 @@ class QueryRunner:
 
 
 class QueryTool:
-    """A proxy class that serves as a tool for querying data available in the server. It provides
-    instructions for querying data available in the server.
+    """This class is the main default toolset for querying data collections in 
+    the Django MCP server. It can be called under the `query_data_collections` 
+    tool name.
     
     Attributes:
         server (TypeDjangoMcpServer): The MCP server instance that this 
@@ -144,14 +150,12 @@ class QueryTool:
         self._models[model_toolset.model._meta.model_name] = model_toolset
 
     def get_instructions(self):
-        """Returns a string containing instructions for using the query tool. 
-        The instructions include information about the available collections/models to query, 
-        the fields that can be searched, and any extra instructions provided by the toolset."""
+        """A tool used to return instructions for querying data collections."""
 
         template = """
-        Use this tool to query data available in the server. 
-        The `collection` parameter specifies the collection to query and the `search_pipeline` parameter is 
-        a list of stage of a MongoDB aggregation pipeline with restricted syntax.
+        Use this tool to query data available on the server. The `collection` parameter specifies 
+        the collection to query and the `search_pipeline` parameter is a list of stage of a MongoDB 
+        aggregation pipeline with restricted syntax.
         
         ## Available collections to query
         """
@@ -167,27 +171,27 @@ class QueryTool:
             ```
             """
 
-            # if klass._text_search_fields:
-            #     str_fields = ', '.join(klass._text_search_fields)
+            if klass._text_search_fields:
+                str_fields = ', '.join(klass._text_search_fields)
 
-            #     template += f"""
-            #     #### Searchable fields
+                template += f"""
+                #### Searchable fields
 
-            #     {str_fields}
-            #     """
-            # else:
-            #     template += """
-            #     #### Searchable fields
+                {str_fields}
+                """
+            else:
+                template += """
+                #### Searchable fields
 
-            #     No searchable fields available for this collection.
-            #     """
+                No searchable fields available for this collection.
+                """
 
-            # if klass.extra_instructions:
-            #     template += f"""
-            #     #### Extra instructions
+            if klass.extra_instructions:
+                template += f"""
+                #### Extra instructions
 
-            #     {klass.extra_instructions}
-            #     """
+                {klass.extra_instructions}
+                """
 
         return template
 
@@ -210,6 +214,11 @@ class QueryTool:
 
         tool.context_kwarg = '_context'
         tool.fn = ToolsetMethodCaller(self.factory, 'query', '_context', False)
+        # Mark the tool as asynchronous to indicate 
+        # that it should be executed in an 
+        # asynchronous context since ToolsetMethodCaller 
+        # is an async callable.
+        tool.is_async = True
         return [tool]
 
 

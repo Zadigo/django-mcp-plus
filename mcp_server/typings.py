@@ -1,8 +1,8 @@
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pydantic
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 
 if TYPE_CHECKING:
     from mcp_server.server.base import DjangoMcpServer
@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 
 type TypeDjangoMcpServer = 'DjangoMcpServer'
 
-type TypeToolsetMethod = Callable[..., QuerySet | pydantic.BaseModel | Sequence[pydantic.BaseModel] | None]
+type TypeToolsetMethodReturn = Sequence[Any] | QuerySet | Model | pydantic.BaseModel | Sequence[pydantic.BaseModel] | None
+
+type TypeToolsetMethod[T = TypeToolsetMethodReturn] = Callable[..., T]
 
 type TypeToolset = McpMethodsToolset | ModelQueryToolset
 

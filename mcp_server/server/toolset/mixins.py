@@ -33,8 +33,9 @@ class ToolsetRegistry(type):
 
 
 class McpMethodsToolset(metaclass=ToolsetRegistry):
-    """Toolset class used to create plain methods that can be used by the MCP server. This class is meant 
-    to be subclassed and extended with additional tools::
+    """Class used as a mixin in order to let the developer define methods that 
+    can be used by the MCP server. This class is meant to be subclassed and 
+    extended with additional tools::
 
         class MyToolset(McpMethodsToolset):
             def example_tool(self):
@@ -42,6 +43,9 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
 
             def another_tool(self, arg1: int, arg2: int):
                 return arg1 + arg2
+
+    If your methods returns querysets, you should consider using the 
+    `ModelQueryToolset` instead.
                 
     Attributes:
         server (TypeDjangoMcpServer): The MCP server instance that this toolset is associated with. This is a class 
@@ -80,6 +84,11 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
 
             # If the tool has a context_kwarg, we need to wrap the method in a ToolsetMethodCaller
             tool.fn = ToolsetMethodCaller(self.__class__, name, tool.context_kwarg, forward_context=forward_context)
+            # ToolsetMethodCaller is a callable that wraps 
+            # the method and returns an async function that 
+            # can be called by the MCP server.
+            tool.is_async = True
+
             returned_tools.append(tool)
         return returned_tools
 
@@ -140,6 +149,10 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
     extra_instructions: Sequence[str] = []
     output_format: str = 'json'
     output_as_resource: bool = False
+
+    _text_search_fields: ClassVar[set[str]] = set()
+    _exclude_fields: ClassVar[set[str]] = set()
+    _published_models: ClassVar[set[type[Model]]] = set()
 
     def __init__(self, context: Context | None = None, request: HttpRequest = None):
         self.context = context

@@ -1,16 +1,19 @@
 import contextvars
 import functools
 import logging
-from collections.abc import Coroutine, Sequence
+from collections.abc import Coroutine
 from types import SimpleNamespace
 from typing import Any
 
-import pydantic
 from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
 from rest_framework.serializers import Serializer
 
-from mcp_server.typings import TypeMcpToolset, TypeToolsetMethod
+from mcp_server.typings import (
+    TypeMcpToolset,
+    TypeToolsetMethod,
+    TypeToolsetMethodReturn,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,31 @@ logger = logging.getLogger(__name__)
 # from anywhere in the code, even if the method is called from a different 
 # thread or context.
 DJANGO_REQUEST_CONTEXT = contextvars.ContextVar('django_request')
+
+
+class SyncToolsetMethodCaller:
+    def __init__(self, func: TypeToolsetMethod):
+        self.func = func
+        functools.update_wrapper(self, func)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} func=<{self.func.__name__}>>"
+
+    def __call__(self, *args, **kwargs):
+        result = self.func(*args, **kwargs)
+
+        if isinstance(result, QuerySet):
+            result = list(result)
+
+        serializer_class = getattr(self.func, '_mcp_plus_serializer', None)
+        if serializer_class is not None:
+            many = isinstance(result, list)
+
+            serializer: Serializer = serializer_class(data=result, many=many)
+            serializer.is_valid(raise_exception=True)
+            result = serializer.data
+            
+        return result
 
 
 class ToolsetMethodCaller:
@@ -41,7 +69,10 @@ class ToolsetMethodCaller:
         self.context_kwarg = context_kwarg
         self.forward_context = forward_context
 
-    def __call__(self, *args, **kwargs) -> Coroutine[Any, Any, list[Any]]:
+    def __repr__(self):
+        return f"<{self.__class__.__name__} toolset={self.toolset.__name__} method=<{self.method_name}>>"
+
+    def __call__(self, *args, **kwargs) -> Coroutine[Any, Any, TypeToolsetMethodReturn]:
         # Create an instance of the toolset class, passing in the context 
         # and request objects as keyword arguments. The context object is 
         # retrieved from the kwargs dictionary using the context_kwarg attribute, 
@@ -53,39 +84,13 @@ class ToolsetMethodCaller:
             request=DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
         )
 
-        method = sync_to_async(SyncToolsetMethodCaller(getattr(instance, self.method_name)))
+        async_method = sync_to_async(SyncToolsetMethodCaller(getattr(instance, self.method_name)))
         if not self.forward_context:
             kwargs.pop(self.context_kwarg, None)
 
-        return method(*args, **kwargs)
-
-
-class SyncToolsetMethodCaller:
-    def __init__(self, func: TypeToolsetMethod):
-        self.func = func
-        functools.update_wrapper(self, func)
-
-    def __call__(self, *args, **kwargs):
-        try:
-            result = self.func(*args, **kwargs)
-        except Exception as e:
-            # Handle the exception as needed, for example, log it or re-raise it
-            raise e
-        else:
-            values: list = []
-            if isinstance(result, QuerySet):
-                values = list(result)
-            elif isinstance(result, pydantic.BaseModel):
-                values = result.model_dump()
-            elif isinstance(result, Sequence) and all(isinstance(item, pydantic.BaseModel) for item in result):
-                values = [item.model_dump() for item in result]
-
-            serializer_class = getattr(self.func, '_mcp_plus_serializer', None)
-            if serializer_class is not None:
-                many = isinstance(values, list)
-
-                serializer: Serializer = serializer_class(data=values, many=many)
-                serializer.is_valid(raise_exception=True)
-                values = serializer.data
-                
-            return values
+        # TODO: Add support for async methods in the toolset. Currently, the toolset methods 
+        # are expected to be synchronous, and they are wrapped in a SyncToolsetMethodCaller to 
+        # ensure that they are called in a synchronous context. However, if the toolset methods are 
+        # asynchronous, they will need to be awaited, and the ToolsetMethodCaller 
+        # will need to be updated to handle this case.
+        return async_method(*args, **kwargs)

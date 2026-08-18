@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from typing import Any
 
 from django.http import HttpRequest
 from rest_framework.generics import (
@@ -29,7 +30,7 @@ class RequestWrapper(HttpRequest):
         id (int, optional): The ID to include in the request path. Defaults to None.
     """
 
-    def __new__(cls, server: TypeDjangoMcpServer, mcp_request: HttpRequest, method: str, body_json: dict| None=None, id: int| None=None):
+    def __new__(cls, server: TypeDjangoMcpServer, mcp_request: HttpRequest, method: str, body_json: dict| None=None, id: int | None=None):
         factory = APIRequestFactory()
 
         path = f'/_djangomcpserver/{server.name}'
@@ -68,12 +69,12 @@ class BaseApiViewTool[T = APIView]:
 
     view: type[T] = None
 
-    def __init__(self, view_class: type[T], **kwargs):
+    def __init__(self, view_class: type[T], **kwargs: Any):
         self.view = view_class.as_view(**kwargs)
 
 
 class ViewMixin:
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[APIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[APIView], actions: dict | None = None):
         self.server = server
         self.view = view_class
 
@@ -106,21 +107,18 @@ class ViewMixin:
             'GET'
         )
 
-        try:
-            return self.view(request).data
-        except Exception as e:
-            raise e
+        return self.view(request).data
 
 
 class DrfListViewTool(ViewMixin, BaseApiViewTool[ListAPIView]):
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[ListAPIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[ListAPIView], actions: dict | None = None):
         if not issubclass(view_class, ListAPIView):
             raise TypeError("view_class must be a subclass of ListAPIView")
         super().__init__(server, view_class, actions=actions) 
 
 
 class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[CreateAPIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[CreateAPIView], actions: dict | None = None):
         if not issubclass(view_class, CreateAPIView):
             raise TypeError("view_class must be a subclass of CreateAPIView")
         super().__init__(server, view_class, actions=actions)
@@ -133,21 +131,18 @@ class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
             body_json=body
         )
 
-        try:
-            return self.view(request).data
-        except Exception as e :
-            raise e
+        return self.view(request).data
     
 
 class DrfRetrieveViewTool(ViewMixin, BaseApiViewTool[RetrieveAPIView]):
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[RetrieveAPIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[RetrieveAPIView], actions: dict | None = None):
         if not issubclass(view_class, RetrieveAPIView):
             raise TypeError("view_class must be a subclass of RetrieveAPIView")
         super().__init__(server, view_class, actions=actions)
 
 
 class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[UpdateAPIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[UpdateAPIView], actions: dict | None = None):
         if not issubclass(view_class, UpdateAPIView):
             raise TypeError("view_class must be a subclass of UpdateAPIView")
         super().__init__(server, view_class, actions=actions)
@@ -161,14 +156,11 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
             body_json=body
         )
 
-        try:
-            return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
-        except Exception as e:
-            raise e
+        return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
 
 
 class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[DestroyAPIView], actions = None):
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[DestroyAPIView], actions: dict | None = None):
         if not issubclass(view_class, DestroyAPIView):
             raise TypeError("view_class must be a subclass of DestroyAPIView")
         super().__init__(server, view_class, actions=actions)
@@ -180,7 +172,4 @@ class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
             'DELETE'
         )
 
-        try:
-            return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
-        except Exception as e:
-            raise e
+        return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data

@@ -107,7 +107,8 @@ class DjangoMcpServer(MCPServer):
 
     def register_toolset(self, toolset: TypeToolset):
         """Register a toolset with the server. This method will add all 
-        the tools defined in the toolset to the server's tool manager.
+        the tools defined in the toolset to the server's tool manager
+        by calling the toolset's `_add_tools_to` method.
         
         Args:
             toolset (TypeToolset): The toolset class to register.

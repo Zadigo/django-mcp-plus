@@ -59,7 +59,19 @@ def model_query_toolset():
 
         def simple_method(self, arg1:int , arg2: int):
             return [arg1, arg2]
+        
     return SimpleQueryToolset
+
+
+@pytest.fixture
+def methods_toolset():
+    from mcp_server.server.toolset.mixins import McpMethodsToolset
+
+    class SimpleMethodToolset(McpMethodsToolset):
+        def simple_method(self, arg1:int , arg2: int):
+            return [arg1, arg2]
+        
+    return SimpleMethodToolset
 
 
 @pytest.fixture
@@ -72,6 +84,12 @@ def http_request():
 def model_instance():
     from tests.testapp.models import SimpleModel
     return SimpleModel.objects.create(name="Test 1")
+
+
+@pytest.fixture
+def model_type():
+    from tests.testapp.models import SimpleModel
+    return SimpleModel
 
 
 @pytest.fixture

@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from mcp_server.views import StreamableHttpView
 
-# Register MCP Server View and bypass default DRF default permission / authentication classes
+# Register MCP Server View and bypass default DRF 
+# default permission / authentication classes
 base_url = getattr(settings, 'DJANGO_MCP_ENDPOINT', 'mcp')
 
 urlpatterns = [

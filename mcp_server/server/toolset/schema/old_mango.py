@@ -58,12 +58,17 @@ def apply_json_mango_query(queryset: QuerySet, pipeline: list[dict], allowed_mod
         extended_operators = []
 
     if allowed_models:
-        allowed_models = [model.lower() if isinstance(model, str) else model._meta.model_name.lower()  for model in allowed_models]
+        allowed_models = [
+            model.lower() if isinstance(model, str) else model._meta.model_name.lower()  
+                for model in allowed_models
+            ]
 
     model = queryset.model
     if text_search_fields == "*":
-        text_search_fields = [f.name for f in model._meta.get_fields() if
-                              isinstance(f, (CharField, TextField)) and f.concrete and not f.is_relation]
+        text_search_fields = [
+            f.name for f in model._meta.get_fields() 
+                if isinstance(f, (CharField, TextField)) and f.concrete and not f.is_relation
+        ]
 
     lookup_alias_map = {}
 
