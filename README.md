@@ -1,4 +1,4 @@
-# Django MCP Plus 
+# Django MCP Plus
 
 **Django MCP Plus** implements the MCP (Model-Controller-Presenter) design pattern in Django, providing a structured way to build web applications. It enhances the traditional MVC (Model-View-Controller) architecture by introducing the Presenter layer, which acts as an intermediary between the Model and the View, allowing for better separation of concerns and more maintainable code.
 
@@ -12,7 +12,7 @@
 * Supports any types of MCP clients (Claude AI, Google Agent Development Kit, etc.)
 
 > [!Note]
-> This project is a fork from [django-mcp](https://github.com/gts360/django-mcp-server) which is no longer maintained. 
+> This project is a fork from [django-mcp](https://github.com/gts360/django-mcp-server) which is no longer maintained.
 > This fork aims to continue the development and maintenance of the project under a different umbrella.
 
 ---
@@ -129,7 +129,7 @@ Specify the fields from the model that should be returned to the client. If empt
 
 **search_fields**
 
-Specify the fields from the model that should be searchable.    
+Specify the fields from the model that should be searchable.
 
 **extra_filters**
 
@@ -172,7 +172,7 @@ By decorating your DRF view class with one of these decorators, you can expose t
 @mcp_publish_list
 class SimpleListView(ListAPIView):
     """A simple view that lists all SimpleModel instances.
-    
+  
     Returns:
         list: A list of serialized SimpleModel instances.
     """
@@ -183,7 +183,7 @@ class SimpleListView(ListAPIView):
 @mcp_publish_create
 class SimpleCreateView(CreateAPIView):
     """A simple view that creates a SimpleModel instance.
-    
+  
     Returns:
         dict: A serialized SimpleModel instance.
     """
@@ -198,7 +198,7 @@ class SimpleDeleteView(DestroyAPIView):
     serializer_class = SimpleSerializer
 ```
 
-> [!Important] 
+> [!Important]
 > Each view should have a docstring that describes the view and its return value. The docstring will be used to generate the tool's schema.
 
 > [!Important]
@@ -213,7 +213,7 @@ You can also create tools using the Python MCP SDK by importing the main server:
 **Tools***
 
 ```python
-from mcp_plus.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.base import erDJANGO_MCP_SERVER
 
 DJANGO_MCP_SERVER.tool()
 async def get_addition(a: int, b: int) -> int:
@@ -232,17 +232,16 @@ def get_simple_model_resource() -> list[SimpleModel]:
     return """A list of SimpleModel instances."""
 ```
 
-
 **Completion***
 
 ```python
 from mcp_plus.server.base import DJANGO_MCP_SERVER
 
 DJANGO_MCP_SERVER.completion()
-def autocomplete_names(ref: PromptReference, argument: CompletionArgument, context: CompletionContext):
+def autocomplete_enames(ref: PromptReference, argument: CompletionArgument, context: CompletionContext):
     if isinstance(ref, PromptReference) and argument.name == 'name':
         names = SimpleModel.objects.values_list('name', flat=True)
-        return Completion(values=names) 
+        return Completion(values=names)
 ```
 
 As long as these functions are defined in an `mcp.py` file of your Django app, they will be automatically discovered by the framework and exposed as MCP tools.
@@ -281,7 +280,6 @@ To test your MCP server with a client, you can follow these steps. We will be us
 
 Before plugin it to a client, you can test your server implementation by running the following commands:
 
-
 ```shell
 npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run /path/to/manage.py stdio_server
 ```
@@ -315,14 +313,13 @@ That's it! You can now start the server and connect to it from the Claude Deskto
 > [!Note]
 > The path should be the absolute path of your Python virtual environment and the `manage.py` file of your Django project.
 
-
 ## ❌ Authentication and Authorization
 
 > [!Important]
 > DRF's authentication and authorization are completely disabled in the Django MCP server.
 > Authentication and authorization should be handled using Oauth2 or any other method in the client.
 
-Django MCP Plus supports [DRF's authentication and authorization system](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) although they are disabled by default.
+Django MCP Plus supports [DRF&#39;s authentication and authorization system](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) although they are disabled by default.
 
 You can enable them with `DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES`.
 
@@ -372,7 +369,6 @@ python manage.py mcp_inspect
 ## 📝 Issues
 
 If you encounter bugs or have feature requests, please open an issue on [GitHub Issues](https://github.com/omarbenhamid/django-mcp-server/issues).
-
 
 ## 📝 Contributing
 

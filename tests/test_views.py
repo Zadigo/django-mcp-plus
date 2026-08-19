@@ -30,7 +30,7 @@ def server():
 
 @pytest.fixture
 def request_context():
-    with patch('mcp_server.server.views.DJANGO_REQUEST_CONTEXT', new=Mock()) as mock_context:
+    with patch('mcp_plus.server.views.DJANGO_REQUEST_CONTEXT', new=Mock()) as mock_context:
         yield mock_context
 
 

@@ -32,14 +32,14 @@ class DjangoMcpServer(MCPServer):
     server with different configurations.
     
     Args:
-        name (str | None): The name of the server. Defaults to 'django_mcp_server'.
+        name (str | None): The name of the server. Defaults to 'django_mcp_plus'.
         instructions (str | None): Instructions for the server. Defaults to None.
         stateless (bool): Whether the server is stateless or not. Defaults to False.
     """
 
     def __init__(self, name: str | None = None, instructions: str | None = None, stateless: bool = False):
         # Prevent extra server settings as we do not use the embedded server
-        super().__init__(name or 'django_mcp_server', instructions)
+        super().__init__(name or 'django_mcp_plus', instructions)
         self.stateless = stateless
 
         engine = import_module(settings.SESSION_ENGINE)

@@ -6,7 +6,7 @@ from mcp_plus.views import StreamableHttpView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include('mcp_server.urls')),
+    path("", include('mcp_plus.urls')),
     path("mcpunsecured", StreamableHttpView.as_view()),
-    path("altmcp", StreamableHttpView.as_view(mcp_server=second_mcp))
+    path("altmcp", StreamableHttpView.as_view(mcp_plus=second_mcp))
 ]

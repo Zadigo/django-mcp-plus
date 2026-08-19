@@ -122,7 +122,7 @@ source-exclude = [
 ]
 
 [project.urls]
-Homepage = "https://johnpm-consuting.fr"
+Homepage = "https://johnpm-consulting.fr/"
 Documentation = "https://github.com/Zadigo/django-mcp-plus/wiki"
 Repository = "https://github.com/Zadigo/django-mcp-plus.git"
 Changelog = "https://github.com/Zadigo/django-mcp-plus/blob/main/CHANGELOG.md"

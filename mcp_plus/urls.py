@@ -16,6 +16,6 @@ urlpatterns = [
             permission_classes=[IsAuthenticated] if getattr(settings, 'DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES', None) else [],
             authentication_classes=[import_string(cls) for cls in getattr(settings, 'DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES', [])]
         ), 
-        name="mcp_server_streamable_http_endpoint"
+        name="mcp_plus_streamable_http_endpoint"
     ),
 ]

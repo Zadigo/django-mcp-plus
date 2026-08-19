@@ -8,7 +8,7 @@ from mcp_plus.decorators import (
     serialize,
 )
 
-# For more advanced low level usage, you can use the mcp_server directly
+# For more advanced low level usage, you can use the mcp_plus directly
 from mcp_plus.server.base import DJANGO_MCP_SERVER, DjangoMcpServer
 from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 

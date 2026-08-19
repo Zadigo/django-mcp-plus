@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mcp_server',
+    'mcp_plus',
     'tests.testapp',
     'oauth2_provider',
     'corsheaders',
