@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from django.http import HttpRequest
+from mcp.server.context import Context
 from rest_framework.generics import (
     CreateAPIView,
     DestroyAPIView,
@@ -13,6 +14,8 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
 from mcp_server.exceptions import ViewClassSubclassError
+
+# from mcp_server.server.session_authentication import resolve_request_from_headers
 from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
 from mcp_server.typings import TypeDjangoMcpServer
 
@@ -31,7 +34,7 @@ class RequestWrapper(HttpRequest):
         id (int, optional): The ID to include in the request path. Defaults to None.
     """
 
-    def __new__(cls, server: TypeDjangoMcpServer, mcp_request: HttpRequest, method: str, body_json: dict| None=None, id: int | None=None):
+    def __new__(cls, server: TypeDjangoMcpServer, mcp_request: HttpRequest, method: str, body_json: dict | None = None, id: int | None = None):
         factory = APIRequestFactory()
 
         path = f'/_djangomcpserver/{server.name}'
@@ -74,8 +77,8 @@ class BaseApiViewTool[T = APIView]:
         self.view = view_class.as_view(**kwargs)
 
 
-class ViewMixin:
-    def __init__(self, server: TypeDjangoMcpServer, view_class: type[APIView], actions: dict | None = None):
+class ViewMixin[T = APIView]:
+    def __init__(self, server: TypeDjangoMcpServer, view_class: type[T], actions: dict | None = None):
         self.server = server
         self.view = view_class
 
@@ -99,11 +102,37 @@ class ViewMixin:
         # in order for django-mcp-plus to handle authentication and authorization.
         super().__init__(view_class, **kwargs)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs: Any):
         """Calls the view with a wrapped request object 
         and returns the response data."""
-        request = RequestWrapper(self.server, DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()), 'GET')
-        return self.view(request).data
+        # request = RequestWrapper(self.server, DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()), 'GET')
+        # return self.view(request).data
+
+        context: Context | None = kwargs.get('_context')
+        wrapper_kwargs = kwargs.get('wrapper_kwargs', {})
+        view_kwargs = kwargs.get('view_kwargs', {})
+
+        return self.call_view_with_params('GET', context=context, wrapper_kwargs=wrapper_kwargs, view_kwargs=view_kwargs)
+
+    def call_view_with_params(self, method: str, context: Context | None = None, view_kwargs: dict | None = None, wrapper_kwargs: dict | None = None):
+        """Calls the Django HttpRequest view with a wrapped request object and returns the response data.
+        
+        Args:
+            method (str): The HTTP method to use for the request (e.g., 'GET', 'POST', 'PUT', 'DELETE').
+            context (Context | None): The context object to use for the request. Defaults to None.
+            view_kwargs (dict | None): The keyword arguments to pass to the view. Defaults to None.
+            wrapper_kwargs (dict | None): The keyword arguments to pass to the RequestWrapper. Defaults to None.
+
+        Returns:
+            The response data from the view.
+        """
+        # headers = getattr(context, 'headers', None) if context is not None else None
+        # wrapped_request = RequestWrapper(self.server, resolve_request_from_headers(headers), 'GET')
+        # return self.view(wrapped_request).data
+
+        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        wrapped_request = RequestWrapper(self.server, mcp_request, method, **(wrapper_kwargs | {}))
+        return self.view(wrapped_request, **(view_kwargs or {})).data
 
 
 class DrfListViewTool(ViewMixin, BaseApiViewTool[ListAPIView]):
@@ -119,11 +148,13 @@ class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
             raise ViewClassSubclassError(view_class, CreateAPIView)
         super().__init__(server, view_class, actions=actions)
 
-    def __call__(self, body: dict):
-        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
-        request = RequestWrapper(self.server, mcp_request, 'POST', body_json=body)
+    def __call__(self, body: dict, **kwargs: Any):
+        # mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        # request = RequestWrapper(self.server, mcp_request, 'POST', body_json=body)
+        # return self.view(request).data
 
-        return self.view(request).data
+        context: Context = kwargs.get('_context', None)
+        return self.call_view_with_params('POST', context=context, wrapper_kwargs={'body_json': body})
     
 
 class DrfRetrieveViewTool(ViewMixin, BaseApiViewTool[RetrieveAPIView]):
@@ -131,6 +162,10 @@ class DrfRetrieveViewTool(ViewMixin, BaseApiViewTool[RetrieveAPIView]):
         if not issubclass(view_class, RetrieveAPIView):
             raise ViewClassSubclassError(view_class, RetrieveAPIView)
         super().__init__(server, view_class, actions=actions)
+
+    def __call__(self, id: int):
+        view_params = {(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}
+        return self.call_view_with_params('GET', view_kwargs=view_params)
 
 
 class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
@@ -140,9 +175,12 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int, body: dict):
-        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
-        request = RequestWrapper(self.server, mcp_request, 'PUT', id=id, body_json=body)
-        return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
+        view_params = {(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}
+        return self.call_view_with_params('PUT', view_kwargs=view_params, wrapper_kwargs={'id': id, 'body': body})
+        
+        # mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        # request = RequestWrapper(self.server, mcp_request, 'PUT', id=id, body_json=body)
+        # return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
 
 
 class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
@@ -152,6 +190,9 @@ class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int):
-        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
-        request = RequestWrapper(self.server, mcp_request, 'DELETE')
-        return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
+        view_params = {(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}
+        return self.call_view_with_params('DELETE', view_kwargs=view_params)
+    
+        # mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        # request = RequestWrapper(self.server, mcp_request, 'DELETE')
+        # return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data

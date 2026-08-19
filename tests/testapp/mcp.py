@@ -9,10 +9,15 @@ from mcp_types import Completion, CompletionArgument, CompletionContext, PromptR
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 from pydantic import BaseModel
 from rest_framework import fields, serializers
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.serializers import Serializer
 
-from mcp_server.decorators import mcp_publish_create, mcp_publish_list, serialize
+from mcp_server.decorators import (
+    mcp_publish_create,
+    mcp_publish_delete,
+    mcp_publish_list,
+    serialize,
+)
 from mcp_server.server.base import DJANGO_MCP_SERVER
 from mcp_server.server.toolset import McpMethodsToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
@@ -93,7 +98,7 @@ class SimpleSerializer(Serializer):
 
 
 @mcp_publish_list
-class ProctedSimpleView(ListAPIView):
+class ProtectedSimpleView(ListAPIView):
     """A protected view that lists all SimpleModel instances.
     
     Returns:
@@ -125,6 +130,15 @@ class SimpleCreateView(CreateAPIView):
     """
     queryset = SimpleModel.objects.all()
     serializer_class = SimpleSerializer
+
+
+@mcp_publish_delete
+class SimpleRetrieveView(RetrieveAPIView):
+    """A simple view that deletes a SimpleModel instance."""
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+
+
 
 
 DJANGO_MCP_SERVER.completion()

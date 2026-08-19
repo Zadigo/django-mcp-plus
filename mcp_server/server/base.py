@@ -158,6 +158,7 @@ class DjangoMcpServer(MCPServer):
             name=name or f'{view_class.__name__}_ListTool',
             description=instructions or view_class.__doc__,
         )
+        tool.context_kwarg = tool.context_kwarg or '_context'
 
         tool.fn = sync_to_async(DrfListViewTool(self, view_class, actions=actions))
 
@@ -179,9 +180,10 @@ class DjangoMcpServer(MCPServer):
 
         tool = self._tool_manager.add_tool(
             fn=dummy,
-            name=name or f'{view_class.__name__}_UpdateTool',
+            name=name or f'{view_class.__name__.lower()}_update_tool',
             description=instructions or view_class.__doc__,
         )
+        tool.context_kwarg = tool.context_kwarg or '_context'
 
         # Register the view class with the toolset method using DrfUpdateViewTool
         tool.fn = sync_to_async(DrfUpdateViewTool(self, view_class, actions=actions))
@@ -205,9 +207,10 @@ class DjangoMcpServer(MCPServer):
 
         tool = self._tool_manager.add_tool(
             fn=dummy,
-            name=name or f'{view_class.__name__}_CreateTool',
+            name=name or f'{view_class.__name__.lower()}_create_tool',
             description=instructions or view_class.__doc__,
         )
+        tool.context_kwarg = tool.context_kwarg or '_context'
 
         # Register the view class with the toolset method using DrfCreateViewTool
         tool.fn = sync_to_async(DrfCreateViewTool(self, view_class, actions=actions))
@@ -231,9 +234,10 @@ class DjangoMcpServer(MCPServer):
 
         tool = self._tool_manager.add_tool(
             fn=dummy,
-            name=name or f'{view_class.__name__}_RetrieveTool',
+            name=name or f'{view_class.__name__.lower()}_retrieve_tool',
             description=instructions or view_class.__doc__,
         )
+        tool.context_kwarg = tool.context_kwarg or '_context'
 
         # Register the view class with the toolset method using DrfRetrieveViewTool
         tool.fn = sync_to_async(DrfRetrieveViewTool(self, view_class, actions=actions))
@@ -257,9 +261,10 @@ class DjangoMcpServer(MCPServer):
 
         tool = self._tool_manager.add_tool(
             fn=dummy,
-            name=name or f'{view_class.__name__}_DeleteTool',
+            name=name or f'{view_class.__name__.lower()}_delete_tool',
             description=instructions or view_class.__doc__,
         )
+        tool.context_kwarg = tool.context_kwarg or '_context'
 
         tool.fn = sync_to_async(DrfDeleteViewTool(self, view_class, actions=actions))
         self._extract_schema(tool, body_schema, view_class)

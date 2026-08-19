@@ -20,6 +20,8 @@ async def convert_to_starlette_request(request: HttpRequest, session_manager: St
     """
     from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
 
+    # TODO: Remove the DJANGO_REQUEST_CONTEXT usage 
+    # and refactor to use the request object directly.
     DJANGO_REQUEST_CONTEXT.set(request)
     body = json.dumps(request.data, cls=DjangoJSONEncoder).encode('utf-8')
 
