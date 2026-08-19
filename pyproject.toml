@@ -126,3 +126,8 @@ Homepage = "https://johnpm-consuting.fr"
 Documentation = "https://github.com/Zadigo/django-mcp-plus/wiki"
 Repository = "https://github.com/Zadigo/django-mcp-plus.git"
 Changelog = "https://github.com/Zadigo/django-mcp-plus/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mcp_plus"]
+namespaces = false
