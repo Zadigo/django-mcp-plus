@@ -61,17 +61,25 @@ class DjangoMcpServer(MCPServer):
         if not self.stateless:
             # Some requests may not have a session (e.g., when initializing 
             # a new session), so we need to handle that case.
-            session_key = request.headers.get(MCP_SESSION_ID_HDR)
-            if session_key:
-                store = self.session_store(session_key=session_key)
-                if not store.exists():
-                    return HttpResponse(status=404, content='Session not found')
-                request.session = store
-            elif request.data.get('method') == 'initialize':
-                # NOTE: Trick to read body before data to avoid DRF complaining
-                request.session = self.session_store()
-            else:
-                return HttpResponse(status=400, content="Session required for stateful server")
+            if not self.stateless:
+                session_key = request.headers.get(MCP_SESSION_ID_HDR)
+                if session_key:
+                    store = self.session_store(session_key=session_key)
+                    if not store.exists():
+                        return HttpResponse(status=404, content='Session not found')
+                    request.session = store
+                elif request.data.get('method') == 'initialize':
+                    # NOTE: Trick to read body before data to avoid DRF complaining
+                    request.session = self.session_store()
+                else:
+                    return HttpResponse(status=400, content="Session required for stateful server")
+
+            # Persist the DRF-authenticated user against this MCP session on
+            # every request. Tool execution may run in a task spawned before
+            # this request ever arrived (see session_auth.py), so we can't
+            # rely on request.user being reachable live at call time.
+            user = getattr(request, 'user', None)
+            request.session['_mcp_auth_user_id'] = user.pk if user and user.is_authenticated else None
 
         result = async_to_sync(convert_to_starlette_request)(request, self.session_manager)
         if not self.stateless and hasattr(request, 'session'):
@@ -137,8 +145,13 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def dummy(id, body: dict):
-            """Template function to call the ListAPIView's get method."""
+        async def dummy(body: dict | None = None) -> list[dict]:
+            """A template function that will be replaced by the actual 
+            view class when the tool is called. This function will set the
+            request body to the provided arguments. In other words, if
+            id is provided as a required parameter, the tool will HAVE
+            to be called with an id argument that will be passed to 
+            the view class"""
 
         tool = self._tool_manager.add_tool(
             fn=dummy,
@@ -161,7 +174,7 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def dummy(id, body: dict):
+        async def dummy(id: int, body: dict) -> dict:
             pass
 
         tool = self._tool_manager.add_tool(
@@ -187,7 +200,7 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def dummy(id, body: dict):
+        async def dummy(body: dict) -> dict:
             pass
 
         tool = self._tool_manager.add_tool(
@@ -213,7 +226,7 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def dummy(id, body: dict):
+        async def dummy(id: int, body: dict) -> dict:
             pass
 
         tool = self._tool_manager.add_tool(
@@ -239,11 +252,11 @@ class DjangoMcpServer(MCPServer):
         """
         self._check_instruction(instructions, view_class)
 
-        async def _template_delete(id, body: dict):
+        async def dummy(id: int, body: dict) -> None:
             pass
 
         tool = self._tool_manager.add_tool(
-            fn=_template_delete,
+            fn=dummy,
             name=name or f'{view_class.__name__}_DeleteTool',
             description=instructions or view_class.__doc__,
         )
