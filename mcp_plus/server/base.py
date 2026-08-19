@@ -7,6 +7,7 @@ from django.contrib.sessions.backends.cache import SessionStore
 from django.http import HttpRequest, HttpResponse
 from mcp.server import MCPServer
 from mcp.server.mcpserver.tools import Tool
+from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from rest_framework.views import APIView
 
 from mcp_plus.server.converter import convert_to_starlette_request
@@ -56,6 +57,15 @@ class DjangoMcpServer(MCPServer):
                 name='get_server_instructions',
                 description='Return MCP server instructions (if any). Always call first.'
             )
+
+    @property
+    def session_manager(self) -> StreamableHTTPSessionManager:
+        return StreamableHTTPSessionManager(
+            app=self,
+            # event=self._event_store,
+            json_response=True,
+            stateless=True
+        )
 
     def _handle_request(self, request: HttpRequest) -> HttpResponse:
         if not self.stateless:
@@ -121,6 +131,12 @@ class DjangoMcpServer(MCPServer):
             except Exception as e:
                 logger.critical(f"Could not determine body schema for {view_class.__name__} {e}. Please provide a body_schema argument.")
                 raise
+
+    def destroy_session(self, request: HttpRequest):
+        session_key = request.headers.get(MCP_SESSION_ID_HDR)
+        if not self.stateless and session_key:
+            self.SessionStore(session_key).flush()
+            request.session = None
 
     def register_toolset(self, toolset: TypeToolset):
         """Register a toolset with the server. This method will add all 

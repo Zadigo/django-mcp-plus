@@ -1,6 +1,7 @@
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 
 # from oauth2_provider.views.generic import ProtectedResourceView
 from rest_framework.views import APIView
@@ -27,3 +28,13 @@ class StreamableHttpView(APIView):
         self.mcp_server.destroy_session(request)
         return HttpResponse(status=200, content="Session destroyed")
 
+
+@csrf_exempt
+@require_GET
+def oauth_protected_resource_metadata(request: HttpRequest):
+    return JsonResponse({
+        "resource": request.build_absolute_uri('/mcp'),
+        "authorization_servers": ["https://your-idp.example.com/"],
+        "scopes_supported": ["read", "write"],
+        "bearer_methods_supported": ["header"],
+    })

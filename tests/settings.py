@@ -126,7 +126,9 @@ MAILERS = {
 
 DJANGO_MCP_PLUS_ENDPOINT = 'mcp'
 
-DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = []
+DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = [
+    'oauth2_provider.backends.OAuth2Backend'
+]
 
 DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL = ""
 
@@ -141,7 +143,6 @@ CORS_ALLOWED_ORIGINS = [
 
 
 AUTHENTICATION_BACKENDS = (
-    'oauth2_provider.backends.OAuth2Backend',
     'rest_framework.authentication.JWTAuthentication',
     # 'django.contrib.auth.backends.ModelBackend',
 )
