@@ -58,7 +58,7 @@ class ResourceManager(type):
             return f"Model: {app_label}.{model_name}\nFields: {', '.join(fields)}"
 
         @server.resource('resource://settings')
-        def some_resource():
+        def settings_resource():
             # Use a single backslash for the newline join syntax
             str_settings = [f"* {value}" for value in available_settings]
             formatted_list = "\n".join(str_settings)
@@ -79,8 +79,8 @@ class ResourceManager(type):
             """
 
 
-        @server.prompt(name='get-settings-details')
-        def get_settings_details() -> str:
+        @server.prompt(name='get-settings')
+        def get_settings() -> str:
             """A prompt that allows the user to query the settings
             that are currently present in the Django project. Useful
             for debugging and testing purposes."""
@@ -90,8 +90,8 @@ class ResourceManager(type):
             )
 
 
-        @server.prompt(name='get-setting-detail')
-        def get_setting_detail(setting_name: str) -> str:
+        @server.prompt(name='get-setting')
+        def get_setting(setting_name: str) -> str:
             """Allows the user to query a specific setting in the Django project
             by providing the setting name. Useful for debugging and testing purposes.
 
@@ -113,15 +113,15 @@ class ResourceManager(type):
             return f"Please analyze this error that I got from my application:\n\n{code}"
         
 
-        @server.prompt(name='list-of-models')
-        def list_of_models() -> str:
+        @server.prompt(name='list-models')
+        def list_models() -> str:
             """A prompt that allows the user to get a list of all the models in
             the Django project. Useful for debugging and testing purposes."""
             return "Can you provide me with a list of all the models in the Django project?"
 
 
-        @server.prompt(name='describe-a-model')
-        def describe_a_model(model_name: str) -> str:
+        @server.prompt(name='describe-model')
+        def describe_model(model_name: str) -> str:
             """A prompt that allows the user to get details of a specific model in
             the Django project. Useful for debugging and testing purposes."""
             return f"Can you provide me with details of this model: {model_name}?"

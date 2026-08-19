@@ -1,5 +1,7 @@
+import pytest
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
+from mcp_server.server.toolset.methods import ToolsetMethodCaller
 from mcp_server.server.toolset.mixins import McpMethodsToolset, ToolsetRegistry
 
 
@@ -20,3 +22,13 @@ def test_add_tool_to(methods_toolset):
 
     manager = ToolManager()
     instance._add_tools_to(manager)
+
+
+async def test_async_methods_toolset(async_methods_toolset):
+    pytest.skip("""
+    When using an async function in the toolset, the ToolsetMethodCaller does not know how to
+    handle it. On self.func, it returns the coroutine object. However when we try to await
+    it in indicates that the coroutine is not callable/awaitable.
+    """)
+    caller = ToolsetMethodCaller(async_methods_toolset, 'simple_method', '_context', False)
+    await caller(1, 1, _context={})

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 type TypeDjangoMcpServer = 'DjangoMcpServer'
 
-type TypeToolsetMethodReturn = Sequence[Any] | QuerySet | Model | pydantic.BaseModel | Sequence[pydantic.BaseModel] | None
+type TypeToolsetMethodReturn = QuerySet | Model | pydantic.BaseModel | Sequence[Any] | Sequence[pydantic.BaseModel] | None
 
 type TypeToolsetMethod[T = TypeToolsetMethodReturn] = Callable[..., T]
 

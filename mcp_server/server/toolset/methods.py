@@ -39,11 +39,11 @@ class SyncToolsetMethodCaller:
         if isinstance(result, QuerySet):
             result = list(result)
 
-        serializer_class = getattr(self.func, '_mcp_plus_serializer', None)
+        serializer_class: Serializer | None = getattr(self.func, '_mcp_plus_serializer', None)
         if serializer_class is not None:
             many = isinstance(result, list)
 
-            serializer: Serializer = serializer_class(data=result, many=many)
+            serializer = serializer_class(data=result, many=many)
             serializer.is_valid(raise_exception=True)
             result = serializer.data
             

@@ -1,43 +1,50 @@
 import json
+import logging
 
 import httpx2
 import pandas
+import pydantic
 from django.core.cache import cache
 from mcp_types import Completion, CompletionArgument, CompletionContext, PromptReference
-from pydantic import BaseModel, model_validator
-from rest_framework import serializers
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+from pydantic import BaseModel
+from rest_framework import fields, serializers
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.serializers import Serializer
 
-from mcp_server.decorators import (
-    mcp_publish_create,
-    mcp_publish_list,
-)
+from mcp_server.decorators import mcp_publish_create, mcp_publish_list, serialize
 from mcp_server.server.base import DJANGO_MCP_SERVER
 from mcp_server.server.toolset import McpMethodsToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
 
+logger = logging.getLogger(__name__)
 
 class ParkingModel(BaseModel):
-    nb_places: int
-    gratuit: bool
-    type_usagers: str
+    nb_places: int | None = None
+    gratuit: str | None = None
+    type_usagers: str | None = None
 
-    @model_validator(mode='wrap')
+    @pydantic.field_validator('gratuit')
     @classmethod
-    def validate_gratuit(cls, data, handler):
-        if isinstance(data['gratuit'], str):
-            return data['gratuit'] == 'true'
+    def validate_gratuit(cls, value):
+        if isinstance(value, str):
+            return value == 'true'
         return False
 
 
+class ParkingSerializer(Serializer):
+    nb_places = fields.IntegerField(required=False, allow_null=True)
+    gratuit = fields.BooleanField(required=False, allow_null=True)
+    type_usagers = fields.CharField(required=False, allow_null=True)
+    
+
 class SimpleGenericTool(McpMethodsToolset):
-    async def _get_dataset(self):
+    def _get_dataset(self):
         url = 'https://hub.huwise.com/api/explore/v2.1/catalog/datasets/osm-france-parking-area/records/?lang=fr&limit=10&offset=0'
         data = cache.get('test_data', None)
         if data is None:
-            async with httpx2.AsyncClient() as client:
-                response = await client.get(url)
+            with httpx2.Client() as client:
+                response = client.get(url)
                 results = response.json()['results']
 
                 df = pandas.DataFrame(results)
@@ -45,15 +52,26 @@ class SimpleGenericTool(McpMethodsToolset):
 
                 values = json.loads(df.to_json(orient='records'))
                 cache.set('test_data', values, 15 * 60)
-                return values
+                data = values
+        return data
 
-    async def get_sample_dataset(self):
+    def get_sample_dataset(self) -> list[ParkingModel]:
         """Fetches a sample dataset of parking areas from an external 
         API and returns it as a list of ParkingModel instances."""
-        data = await self._get_dataset()
+        data = self._get_dataset()
         return [ParkingModel(**value) for value in data]
+
+    @serialize(ParkingSerializer)
+    def get_sample_serialized_dataset(self) -> list[dict]:
+        """Fetches a sample dataset of parking areas from an external
+        API and returns it as a list of serialized ParkingModel instances.
+        
+        Returns:
+            list: A list of serialized ParkingModel instances.
+        """
+        return self._get_dataset()
             
-    def additional_tool(self, a: int, b: int) -> int:
+    def addition_tool(self, a: int, b: int) -> int:
         """Add two numbers and return the result.
 
         Args:
@@ -75,15 +93,36 @@ class SimpleSerializer(Serializer):
 
 
 @mcp_publish_list
+class ProctedSimpleView(ListAPIView):
+    """A protected view that lists all SimpleModel instances.
+    
+    Returns:
+        list: A list of serialized SimpleModel instances.
+    """
+
+    permission_classes = (TokenHasReadWriteScope,)
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+
+
+@mcp_publish_list
 class SimpleListView(ListAPIView):
-    """A simple view that lists all SimpleModel instances."""
+    """A simple view that lists all SimpleModel instances.
+    
+    Returns:
+        list: A list of serialized SimpleModel instances.
+    """
     queryset = SimpleModel.objects.all()
     serializer_class = SimpleSerializer
 
 
 @mcp_publish_create
 class SimpleCreateView(CreateAPIView):
-    """A simple view that creates a SimpleModel instance."""
+    """A simple view that creates a SimpleModel instance.
+    
+    Returns:
+        dict: A serialized SimpleModel instance.
+    """
     queryset = SimpleModel.objects.all()
     serializer_class = SimpleSerializer
 

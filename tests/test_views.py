@@ -27,6 +27,7 @@ def server():
     type(mock_server).name = PropertyMock(return_value='mock_server')
     return mock_server
 
+
 @pytest.fixture
 def request_context():
     with patch('mcp_server.server.views.DJANGO_REQUEST_CONTEXT', new=Mock()) as mock_context:

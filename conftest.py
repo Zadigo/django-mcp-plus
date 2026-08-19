@@ -75,6 +75,17 @@ def methods_toolset():
 
 
 @pytest.fixture
+def async_methods_toolset():
+    from mcp_server.server.toolset.mixins import McpMethodsToolset
+
+    class SimpleMethodsToolset(McpMethodsToolset):
+        async def simple_method(self, arg1:int , arg2: int):
+            return [arg1, arg2]
+        
+    return SimpleMethodsToolset
+
+
+@pytest.fixture
 def http_request():
     from django.test import RequestFactory
     return RequestFactory().get('/')
