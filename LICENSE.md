@@ -1,5 +1,6 @@
-# MIT LICENCE
-Copyright (c) 2025 Omar BENHAMID
+MIT License
+
+Copyright (c) 2026 John PENDENQUE
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
