@@ -46,7 +46,7 @@ class DjangoMcpServer(MCPServer):
         self.session_store: SessionStore = engine.SessionStore
 
         # Add rquired tools when the the server is initialized
-        server_instruction_tool = getattr(settings, 'DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL', True)
+        server_instruction_tool = getattr(settings, 'DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL', True)
         if server_instruction_tool:
             async def _get_server_instructions():
                 return self.instructions or ""
