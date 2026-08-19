@@ -308,6 +308,23 @@ We will be using Claude AI for this demonstration, but you can use any client th
 }
 ```
 
+You can also use in VS code with:
+
+```JSON
+{
+    "servers": {
+        "mcp_plus": {
+            "command": "/path/to/.venv/bin/python",
+            "type": "stdio",
+            "args": [
+                "/path/to/manage.py",
+                "stdio_server"
+            ]
+        }
+    }
+}
+```
+
 That's it! You can now start the server and connect to it from the Claude Desktop app.
 
 > [!Note]

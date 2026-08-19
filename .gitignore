@@ -186,3 +186,5 @@ Claude.local.md
 reports/*
 
 .DS_Store
+
+./vscode/mcp.json
