@@ -114,7 +114,7 @@ class ViewMixin[T = APIView]:
 
         return self.call_view_with_params('GET', context=context, wrapper_kwargs=wrapper_kwargs, view_kwargs=view_kwargs)
 
-    def call_view_with_params(self, method: str, context: Context | None = None, view_kwargs: dict | None = None, wrapper_kwargs: dict | None = None):
+    def call_view_with_params(self, method: str, context: Context | None = None, view_kwargs: dict | None = None, wrapper_kwargs: dict | None = None) -> list[dict] | dict | None:
         """Calls the Django HttpRequest view with a wrapped request object and returns the response data.
         
         Args:
