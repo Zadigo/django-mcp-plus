@@ -38,8 +38,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'oauth2_provider.middleware.OAuth2ExtraTokenMiddleware',
 ]
 
 ROOT_URLCONF = 'tests.urls'
@@ -126,7 +128,7 @@ DJANGO_MCP_PLUS_ENDPOINT = 'mcp'
 
 DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = []
 
-DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL=""
+DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL = ""
 
 DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES = []
 
@@ -136,3 +138,10 @@ DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES = []
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+
+
+AUTHENTICATION_BACKENDS = (
+    'oauth2_provider.backends.OAuth2Backend',
+    'rest_framework.authentication.JWTAuthentication',
+    # 'django.contrib.auth.backends.ModelBackend',
+)

@@ -7,6 +7,8 @@ class McpServerConfig(AppConfig):
     name = "mcp_server"
 
     def ready(self):
+        from mcp_server import checks  # noqa: F401
+        
         autodiscover_modules('mcp')
                 
         from mcp_server.server.discovery import initialize_toolsets

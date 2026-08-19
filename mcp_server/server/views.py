@@ -98,15 +98,10 @@ class ViewMixin:
         # in order for django-mcp-plus to handle authentication and authorization.
         super().__init__(view_class, **kwargs)
 
-    def __call__(self):
+    def __call__(self, *args, **kwargs):
         """Calls the view with a wrapped request object 
         and returns the response data."""
-        request = RequestWrapper(
-            self.server,
-            DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()),
-            'GET'
-        )
-
+        request = RequestWrapper(self.server, DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()), 'GET')
         return self.view(request).data
 
 
@@ -124,12 +119,8 @@ class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, body: dict):
-        request = RequestWrapper(
-            self.server,
-            DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()),
-            'POST',
-            body_json=body
-        )
+        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        request = RequestWrapper(self.server, mcp_request, 'POST', body_json=body)
 
         return self.view(request).data
     
@@ -148,14 +139,8 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int, body: dict):
-        request = RequestWrapper(
-            self.server,
-            DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()),
-            'PUT',
-            id=id,
-            body_json=body
-        )
-
+        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        request = RequestWrapper(self.server, mcp_request, 'PUT', id=id, body_json=body)
         return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data
 
 
@@ -166,10 +151,6 @@ class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int):
-        request = RequestWrapper(
-            self.server,
-            DJANGO_REQUEST_CONTEXT.get(SimpleNamespace()),
-            'DELETE'
-        )
-
+        mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
+        request = RequestWrapper(self.server, mcp_request, 'DELETE')
         return self.view(request, **{(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}).data

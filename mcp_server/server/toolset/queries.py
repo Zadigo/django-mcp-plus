@@ -235,12 +235,27 @@ def initialize_query_tools():
     global _OUTPUT_FORMATS
     
     renderer_klasses: list[BaseRenderer] = []
-    renderers: list[str] = getattr(settings, 'DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES', ['rest_framework.renderers.JSONRenderer'])
-    for value in renderers:
+    user_provided_renderers: list[str] = getattr(settings, 'DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES', [])
+
+    json_renderer = 'rest_framework.renderers.JSONRenderer'
+
+    if not user_provided_renderers:
+        user_provided_renderers.extend([json_renderer])
+
+    # At least ensure that the JSON renderer is always 
+    # included in the list of renderers since MCP servers
+    # are expected to support JSON output by default.
+    if json_renderer not in user_provided_renderers:
+        user_provided_renderers.append(json_renderer)
+
+    for value in user_provided_renderers:
         klass = import_string(value)
         renderer_klasses.append(klass)
 
-    _OUTPUT_FORMATS = {renderer_class.format: renderer_class for renderer_class in renderer_klasses}
+    _OUTPUT_FORMATS = {
+        renderer_class.format: renderer_class 
+            for renderer_class in renderer_klasses
+    }
 
     server_tools: dict[TypeDjangoMcpServer, QueryTool] = {}
 

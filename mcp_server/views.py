@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+# from oauth2_provider.views.generic import ProtectedResourceView
 from rest_framework.views import APIView
 
 from mcp_server.server.base import DJANGO_MCP_SERVER

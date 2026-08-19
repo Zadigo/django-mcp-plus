@@ -1,3 +1,8 @@
+from rest_framework import serializers
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.serializers import Serializer
+
+from mcp_server.decorators import mcp_publish_create, mcp_publish_list
 from mcp_server.server.toolset import McpMethodsToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
 
@@ -19,6 +24,20 @@ class SimpleGenericTool(McpMethodsToolset):
 class SimpleModelToolFromTestApp(ModelQueryToolset):
     model = SimpleModel
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.order_by('name')
+
+class SimpleSerializer(Serializer):
+    name = serializers.CharField(max_length=100)
+
+
+@mcp_publish_create
+class SimpleView(CreateAPIView):
+    """A simple view that creates a SimpleModel instance."""
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+
+
+@mcp_publish_list
+class SimpleListView(ListAPIView):
+    """A simple view that lists all SimpleModel instances."""
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
