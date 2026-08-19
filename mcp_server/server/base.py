@@ -97,10 +97,15 @@ class DjangoMcpServer(MCPServer):
                 view_instance = view_class(request=None, format_kwarg=None)
                 schema_generator = view_class.schema
                 schema_generator.view = view_instance
-                tool.parameters['properties']['body'] = schema_generator.map_serializer(
-                    view_instance.get_serializer(),  # Safer than calling serializer_class() directly
-                    # 'response'
-                )
+
+                func = getattr(schema_generator, 'map_serializer', None)
+                if func is not None:
+                    func(view_instance.get_serializer())
+                    
+                # tool.parameters['properties']['body'] = schema_generator.map_serializer(
+                #     view_instance.get_serializer(),  # Safer than calling serializer_class() directly
+                #     # 'response'
+                # )
                 # view_class.schema.map_serializer(view_class().get_serializer(), 'response')
             except Exception as e:
                 logger.critical(f"Could not determine body schema for {view_class.__name__} {e}. Please provide a body_schema argument.")
