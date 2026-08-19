@@ -1,7 +1,5 @@
 from django.db.models import QuerySet
 
-# For more advanced low level usage, you can use the mcp_server directly
-from mcp_plus import mcp_server as mcp
 from mcp_plus.decorators import (
     mcp_publish_create,
     mcp_publish_delete,
@@ -9,7 +7,9 @@ from mcp_plus.decorators import (
     mcp_publish_update,
     serialize,
 )
-from mcp_plus.server.base import DjangoMcpServer
+
+# For more advanced low level usage, you can use the mcp_server directly
+from mcp_plus.server.base import DJANGO_MCP_SERVER, DjangoMcpServer
 from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 from .models import Bird, City, Location
@@ -74,7 +74,7 @@ class SpeciesCount(McpMethodsToolset):
 second_mcp = DjangoMcpServer(name="altserver")
 
 
-@mcp.tool()
+@DJANGO_MCP_SERVER.tool()
 async def get_species_count(name : str):
     """ Find the ID of a bird species by its name or part of name. Returns the count"""
     ret = await Bird.objects.filter(species__icontains=name).afirst()

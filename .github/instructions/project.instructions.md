@@ -12,7 +12,7 @@ description: "Use when editing any part of the project, including frontends, bac
 ## Repository structure
 
 ```text
-mcp_server
+mcp_plus
 ├── management
 │   └── commands
 ├── migrations

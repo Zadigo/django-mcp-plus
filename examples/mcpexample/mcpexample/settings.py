@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     "bird_counter",
     "rest_framework",
     "rest_framework.authtoken",
-    "mcp_server"
+    "mcp_plus"
 ]
 
 MIDDLEWARE = [

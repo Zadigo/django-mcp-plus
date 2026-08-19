@@ -25,7 +25,7 @@ def pytest_configure(config):
                 'rest_framework',
                 'rest_framework_simplejwt',
                 'drf_spectacular',
-                'mcp_server',
+                'mcp_plus',
                 'tests.testapp',
             ],
             AUTH_USER_MODEL='auth.User',
