@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import ClassVar
+from typing import Annotated, ClassVar
 
 from django.apps import apps
 from django.conf import settings
@@ -12,9 +12,13 @@ from mcp.types import (
     PromptReference,
     ResourceTemplateReference,
 )
+from pydantic import Field
 
 from mcp_plus.typings import TypeDjangoMcpServer
 
+type SettingName = Annotated[str, Field(description="The name of a Django setting.")]
+
+type ModelName = Annotated[str, Field(description="The name of a Django model.")]
 
 class ResourceManager(type):
     registry: ClassVar[defaultdict[str, list[Resource]]] = defaultdict(list)
@@ -51,7 +55,7 @@ class ResourceManager(type):
         available_settings.sort(key=lambda x: x.lower())
 
         @server.resource("models://{app_label}/{model_name}")
-        def get_model_resource(app_label: str, model_name: str) -> str:
+        def get_model_resource(app_label: str, model_name: ModelName) -> str:
             """Returns details about a specific Django model."""
             model = apps.get_model(app_label, model_name)
             fields = [f.name for f in model._meta.get_fields()]
@@ -91,7 +95,7 @@ class ResourceManager(type):
 
 
         @server.prompt(name='get-setting')
-        def get_setting(setting_name: str) -> str:
+        def get_setting(setting_name: SettingName) -> str:
             """Allows the user to query a specific setting in the Django project
             by providing the setting name. Useful for debugging and testing purposes.
 
@@ -121,7 +125,7 @@ class ResourceManager(type):
 
 
         @server.prompt(name='describe-model')
-        def describe_model(model_name: str) -> str:
+        def describe_model(model_name: ModelName) -> str:
             """A prompt that allows the user to get details of a specific model in
             the Django project. Useful for debugging and testing purposes."""
             return f"Can you provide me with details of this model: {model_name}?"

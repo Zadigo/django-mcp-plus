@@ -187,4 +187,4 @@ reports/*
 
 .DS_Store
 
-./vscode/mcp.json
+mcp.json
