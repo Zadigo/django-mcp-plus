@@ -1,496 +1,386 @@
-# Django MCP Server
+# Django MCP Plus 
 
-[![PyPI version](https://img.shields.io/pypi/v/django-mcp-server)](https://pypi.org/project/django-mcp-server/)
-![License](https://img.shields.io/pypi/l/django-mcp-server)
-[![Published on Django Packages](<https://img.shields.io/badge/Published%20on-Django%20Packages-0c3c26>)](https://djangopackages.org/packages/p/django-mcp-server/)
-![Python versions](https://img.shields.io/pypi/pyversions/django-mcp-server)
-[![Django versions](https://img.shields.io/pypi/frameworkversions/django/django-mcp-server)](https://pypi.org/project/django-mcp-server/)
+**Django MCP Plus** implements the MCP (Model-Controller-Presenter) design pattern in Django, providing a structured way to build web applications. It enhances the traditional MVC (Model-View-Controller) architecture by introducing the Presenter layer, which acts as an intermediary between the Model and the View, allowing for better separation of concerns and more maintainable code.
 
-**Django MCP Server** is an implementation of the **Model Context Protocol (MCP)** extension for Django. This module allows **MCP Clients** and **AI agents** to interact with **any Django application** seamlessly.
+## 🚀 Features
 
-🚀 Django-Style declarative style tools to allow AI Agents and MCP clients tool to interact with Django.
-🚀 Expose Django models for AI Agents and MCP Tools to query in 2 lines of code in a safe way.
-🚀 Convert Django Rest Framework APIs to MCP tools with one annotation.
-✅ Working on both WSGI and ASGI without infrastructure change.
-✅ Validated as a Remote Integration with Claude AI.
-🤖 Any MCP Client or AI Agent supporting MCP , (Google Agent Developement Kit, Claude AI, Claude Desktop ...) can interact with your application.
+* MCP architecture implementation
+* Clear separation of concerns between Model, Controller, and Presenter
+* Easy integration with existing Django projects
+* Works on both WSGI and ASGI servers
+* Supports Django's built-in authentication and authorization system
+* Supports any types of MCP clients (Claude AI, Google Agent Development Kit, etc.)
 
-Many thanks 🙏 to [all the contributor community](https://github.com/omarbenhamid/django-mcp-server/graphs/contributors)
-
-Maintained ✨ with care by [Smart GTS software engineering](https://www.smart-gts.com/#contact).
-
-Licensed under the **MIT License**.
+> [!Note]
+> This project is a fork from [django-mcp](https://github.com/gts360/django-mcp-server) which is no longer maintained. 
+> This fork aims to continue the development and maintenance of the project under a different umbrella.
 
 ---
 
-## Features
+## 📦 Installation
 
-- Expose Django models and logic as **MCP tools**.
-- Serve an MCP endpoint inside your Django app.
-- Easily integrate with AI agents, MCP Clients, or tools like Google ADK.
-
----
-
-## Quick Start
-
-### 1️⃣ Install
+Run one of the following commands to install Django MCP Plus:
 
 ```bash
+# With Pip
 pip install django-mcp-plus
+
+# With Poetry
+poetry add django-mcp-plus
+
+# With Pipenv
+pipenv install django-mcp-plus
+
+# With UV
+uv install django-mcp-plus
 ```
 
-Or directly from GitHub:
-
-```bash
-pip install git+https://github.com/omarbenhamid/django-mcp-plus.git
-```
-
----
-
-### 2️⃣ Configure Django
-
-✅ Add `mcp_server` to your `INSTALLED_APPS`:
+Add the app to your `INSTALLED_APPS` in `settings.py`:
 
 ```python
 INSTALLED_APPS = [
-    # your apps...
-    'mcp_server',
+    ...
+    'django_mcp_plus',
+    ...
 ]
-```
 
-✅ Add the **MCP endpoint** to your `urls.py`:
+Add the following to your `urls.py`:
 
 ```python
 from django.urls import path, include
 
 urlpatterns = [
-    # your urls...
-    path("", include('mcp_server.urls')),
+    ...
+    path('mcp/', include('django_mcp_plus.urls')),
+    ...
 ]
 ```
 
-By default, the MCP endpoint will be available at `/mcp`.
+The server will be available at `http://localhost:8000/mcp/` by default.
 
 ---
 
-### 3️⃣ Creating MCP tools
+## 📖 Usage
 
-In mcp.py create a subclass of `ModelQueryToolset` to give access to a model :
+MCP servers use a simple JSON-based protocol for communication between clients and the server. Clients send requests to the server, which processes them and returns responses.
+
+They expose `tools`, `resources` or `prompts` with which clients can interact.
+
+The Django MCP server is based on the excellent [Python SDK for the Model-Context Protocol](https://py.sdk.modelcontextprotocol.io/) and implements all the features of the protocol.
+
+### 📚 Creating MCP Tools
+
+Django MCP Plus allows the creation of two types of tools based on plain methods or Django models. All MCP tools and features should be placed in an `mcp.py` file in your Django app which will be automatically discovered by the framework.
+
+#### 📌 Tools from plain methods
+
+Plain methods can be exposed as MCP tools by subclassing `McpMethodsToolset` and defining your methods. Each method should have type hints for its parameters and return value, which will be used to generate the tool's schema.
+
+These methods can return anything that is serializable to JSON, including dictionaries, lists, strings, numbers, and booleans.
 
 ```python
-from mcp_server import ModelQueryToolset
-from .models import *
+from mcp_plus.server.toolset import McpMethodsToolset, ModelQueryToolset
 
-
-class BirdQueryTool(ModelQueryToolset):
-    model = Bird
-
-    def get_queryset(self):
-        """self.request can be used to filter the queryset"""
-        return super().get_queryset().filter(location__isnull=False)
-
-class LocationTool(ModelQueryToolset):
-    model = Location
-
-class CityTool(ModelQueryToolset):
-    model = City
+class SimpleGenericTool(McpMethodsToolset):
+    def get_addition(self, a: int, b: int) -> int:
+        """Returns the sum of two integers."""
+        return a + b
 ```
 
-Or create a sub class of `McpMethodsToolset` to publish generic methods (private _ methods are not published)
+`McpMethodsToolset` is a toolset that allows you to define multiple methods in a single class. Each method can have its own parameters and return type, and the toolset will automatically generate the schema for each method.
 
-Example:
+They can also return nothing and just be used to perform some action on the server side. In this case, the return type should be `None`.
 
 ```python
-from mcp_server import McpMethodsToolset
-from django.core.mail import send_mail
-
-class MyAITools(McpMethodsToolset):
-    def add(self, a: int, b: int) -> list[dict]:
-        """A service to add two numbers together"""
-        return a+b
-
-    def send_email(self, to_email: str, subject: str, body: str):
-        """ A tool to send emails"""
-
+class SimpleActionTool(McpMethodsToolset):
+    def perform_action(self, action: str) -> None:
+        """Performs an action on the server side."""
         send_mail(
-             subject=subject,
-             message=body,
-             from_email='your_email@example.com',
-             recipient_list=[to_email],
-             fail_silently=False,
+            subject=subject,
+            message=body,
+            from_email='your_email@example.com',
+            recipient_list=[to_email],
+            fail_silently=False,
          )
 ```
 
----
+### 📌 Tools from Django models
 
-### Verify with MCP Inspect
+These tools expect a model from which can be queried and sent to the client.
 
-Use the management commande mcp_inspect to ensure your tools are correctly declared :
-
-```bash
-python manage.py mcp_inspect
-```
-
-### Use the MCP with any MCP Client
-
-The mcp tool is now published on your Django App at `/mcp` endpoint.
-
-**IMPORTANT** For production setup, on non-public data, consider enabling
-authorization through : DJANGO_MCP_AUTHENTICATION_CLASSES
-
-### Test with MCP Python SDK
-
-You can test it with the python mcp SDK :
+In its simplest form you can create a tool from a model by subclassing `ModelQueryToolset` and specifying the model to be used.
 
 ```python
-from mcp.client.streamable_http import streamablehttp_client
-from mcp import ClientSession
+from mcp_plus.server.toolset import ModelQueryToolset
 
-
-async def main():
-    # Connect to a streamable HTTP server
-    async with streamablehttp_client("http://localhost:8000/mcp") as (
-        read_stream,
-        write_stream,
-        _,
-    ):
-        # Create a session using the client streams
-        async with ClientSession(read_stream, write_stream) as session:
-            # Initialize the connection
-            await session.initialize()
-            # Call a tool
-            tool_result = await session.call_tool("get_alerts", {"state": "NY"})
-            print(tool_result)
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+class SimpleModelToolFromTestApp(ModelQueryToolset):
+    model = SimpleModel
 ```
 
-Replace `http://localhost:8000/mcp` by the acutal Django host and run this cript.
+The class proposes a set of attributes that can be used to manipulate the underlying queryset and the data returned to the client. The attributes are:
 
-### Use from Claude AI
+**exclude_fields**
 
-As of **June 2025** Claude AI support now MCPs through streamable HTTP protocol with preè-requisites :
+Exclude fields from the model that should not be returned to the client. This is useful for sensitive information or fields that are not relevant to the client.
 
-* 
-* Setup OAuth2, for example :
-  * Install [Django Oauth Toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/))
-  * Include `'oauth2_provider.contrib.rest_framework.OAuth2Authentication'` in `DJANGO_MCP_AUTHENTICATION_CLASSES` in `settings.py`
-* Claude AI requires Dynamic Client Registration. as of today [it is not supported by django oauth toolkit](github.com/jazzband/django-oauth-toolkit/issues/670) but you can use [This Django Oauth Toolkit DCR Add-On](https://github.com/omarbenhamid/django-oauth-toolkit-dcr)
-* Unless you implement OAuth server Metadata RFC correctly, you need to keep OAuth2 URLS (`/register`, `/token` and `/authorize` at their default location).
+**fields**
 
-### Test in Claude Desktop
+Specify the fields from the model that should be returned to the client. If empty, all fields will be returned.
 
-You can [test MCP servers in Claude Desktop](https://modelcontextprotocol.io/quickstart/server). As for now
-claude desktop only supports local MCP Servers. So you need to have your app installed on the same machine, in a
-dev setting probably.
+**search_fields**
 
-For this you need :
+Specify the fields from the model that should be searchable.    
 
-1. To install Claude Desktop from [claude.ai](https://claude.ai)
-2. Open File > Settings > Developer and click **Edit Config**
-3. Open `claude_desktop_config.json` and setup your MCP server :
-   ```json
-   {
+**extra_filters**
+
+Specify additional filters that can be applied to the queryset. The filters follow the MangoDB pipeline syntax and can be used to filter the data returned to the client.
+
+**extra_instructions**
+
+Provide extra instructions for the tool.
+
+**output_format**
+
+Specify the format of the output. Default is `'json'`.
+
+**output_as_resource**
+
+Indicate whether the output should be treated as a resource. Default is `False`.
+
+You can also override the `get_queryset` method to customize the queryset used by the tool.
+
+```python
+class SimpleModelToolFromTestApp(ModelQueryToolset):
+    model = SimpleModel
+
+    def get_queryset(self):
+        """Return a custom queryset."""
+        return self.model.objects.filter(is_active=True)
+```
+
+### 📌 Tools from Rest Framework views
+
+You can also create tools from Django Rest Framework views by using one of the following decorators:
+
+* mcp_publish_create
+* mcp_publish_delete
+* mcp_publish_list
+
+By decorating your DRF view class with one of these decorators, you can expose the view as an MCP tool. The decorator will automatically generate the schema for the view and handle the request and response.
+
+```python
+@mcp_publish_list
+class SimpleListView(ListAPIView):
+    """A simple view that lists all SimpleModel instances.
+    
+    Returns:
+        list: A list of serialized SimpleModel instances.
+    """
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+
+
+@mcp_publish_create
+class SimpleCreateView(CreateAPIView):
+    """A simple view that creates a SimpleModel instance.
+    
+    Returns:
+        dict: A serialized SimpleModel instance.
+    """
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+
+
+@mcp_publish_delete
+class SimpleDeleteView(DestroyAPIView):
+    """A simple view that deletes a SimpleModel instance."""
+    queryset = SimpleModel.objects.all()
+    serializer_class = SimpleSerializer
+```
+
+> [!Important] 
+> Each view should have a docstring that describes the view and its return value. The docstring will be used to generate the tool's schema.
+
+> [!Important]
+> The decorators should decorate the view that is related to the tool. For example,
+> `mcp_publish_create` will raise an error if it decorates a view that does not create an object.
+> Similarly, `mcp_publish_delete` and `mcp_publish_list` should only decorate views that delete and list objects, respectively.
+
+### Tools with Python MCP SDK
+
+You can also create tools using the Python MCP SDK by importing the main server:
+
+**Tools***
+
+```python
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+
+DJANGO_MCP_SERVER.tool()
+async def get_addition(a: int, b: int) -> int:
+    """Returns the sum of two integers."""
+    return a + b
+```
+
+**Resources***
+
+```python
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+
+DJANGO_MCP_SERVER.resource()
+def get_simple_model_resource() -> list[SimpleModel]:
+    """Returns a list of SimpleModel instances."""
+    return """A list of SimpleModel instances."""
+```
+
+
+**Completion***
+
+```python
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+
+DJANGO_MCP_SERVER.completion()
+def autocomplete_names(ref: PromptReference, argument: CompletionArgument, context: CompletionContext):
+    if isinstance(ref, PromptReference) and argument.name == 'name':
+        names = SimpleModel.objects.values_list('name', flat=True)
+        return Completion(values=names) 
+```
+
+As long as these functions are defined in an `mcp.py` file of your Django app, they will be automatically discovered by the framework and exposed as MCP tools.
+
+## ➕ Returning data from tools
+
+Although the tools can return any data that can be serialized to JSON, there is a special situation where you might want to use a DRF serializer to return data from a tool.
+
+That's where the `serialize` decorator comes in. It allows you to use a DRF serializer to serialize the data returned from a tool.
+
+```python
+from rest_framework import serializers
+
+class SimpleModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SimpleModel
+        fields = '__all__'
+
+
+class SimpleModelToolFromTestApp(ModelQueryToolset):
+    model = SimpleModel
+
+    @serialize(SimpleModelSerializer)
+    def get_dataset(self):
+        """Return a dataset of SimpleModel instances."""
+        return self.model.objects.all()
+```
+
+The data that will be returned to the client will be serialized using the `SimpleModelSerializer` serializer.
+
+## 📖 Usage with MCP Clients
+
+To test your MCP server with a client, you can follow these steps. We will be using `uv` for this demonstration.
+
+### 📌 Testing your server implementation
+
+Before plugin it to a client, you can test your server implementation by running the following commands:
+
+
+```shell
+npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run /path/to/manage.py stdio_server
+```
+
+### 📌 Testing your server with a client
+
+You can test your server with a client by running the following commands.
+
+We will be using Claude AI for this demonstration, but you can use any client that supports the MCP protocol.
+
+1. Install Claude Desktop from [claude.ai](https://claude.ai)
+2. In the Claude Desktop app, go to `File > Settings > Developer` and click **Edit Config**
+3. Add the following configuration to the `config.json` file:
+
+```json
+{
     "mcpServers": {
         "test_django_mcp": {
-            "command": "/path/to/interpreter/python",
+            "command": "/path/to/.venv/bin/python",
             "args": [
-                "/path/to/your/project/manage.py",
+                "/path/to/manage.py",
                 "stdio_server"
             ]
         }
     }
-   ```
-
-**NOTE** `/path/to/interpreter/` should point to a python interpreter you use (can be in your venv for example)
-and `/path/to/your/project/` is the path to your django project.
-
-## Advanced topics
-
-### Publish Django Rest Framework APIs as MCP Tools
-
-You can use `drf_publish_create_mcp_tool` / `drf_publish_update_mcp_tool` / `drf_publish_delete_mcp_tool` /
-`drf_publish_list_mcp_tool` as annotations or method calls to register DRF CreateModelMixin / UpdateModelMixin
-/ DestroyModelMixin / ListModelMixin based views  to MCP tools seamlessly. Django MCP Server will generate the schemas
-to allow MCP Clients to use them.
-
-**NOTE** in some *older DRF versions* schema generation is not supported out of the box, you should then provide to the registration
-annotation the
-
-```python
-from mcp_server import drf_publish_create_mcp_tool
-
-@drf_publish_create_mcp_tool
-class MyModelView(CreateAPIView):
-    """
-    A view to create MyModel instances
-    """
-    serializer_class=MySerializer
-```
-
-notice that the docstring of the view is used as instructions for the model.
-You can better tune this like :
-
-```python
-@drf_publish_create_mcp_tool(instructions="Use this view to create instances of MyModel")
-class MyModelView(CreateAPIView):
-    """
-    A view to create MyModel instances
-    """
-    serializer_class=MySerializer
-```
-
-Finally, you can register after hand in mcp.py for example with:
-
-```python
-drf_publish_update_mcp_tool(MyDRFAPIView, instructions="Use this tool to update my model, but use it with care")
-```
-
-**IMPORTANT**
-
-Notice that **builti-in authentication classes are disabled** by default along with filter_backends, permission_classes and pagination_class, that's because
-the MCP authentication is used.
-
-Since the pagination_class is also disabled, you will need to account for that if you're using an existing paginated DRF view (`self.paginator` will be `None`).
-
-### Django Rest Framework Serializer integration
-
-You can annotate a tool with `drf_serialize_output(...)` to serialize its output using
-django rest framework, like :
-
-```python
-from mcp_server import drf_serialize_output
-from .serializers import FooBarSerializer
-from .models import FooBar
-
-class MyTools(McpMethodsToolset):
-   @drf_serialize_output(FooBarSerializer)
-   def get_foo_bar():
-       return FooBar.objects.first()
-```
-
-### Use low level mcp server annotation
-
-You can import the DjangoMCP server instance and use FastMCP annotations to declare
-mcp tools and resources :
-
-```python
-from mcp_server import mcp_server as mcp
-from .models import Bird
-
-
-@mcp.tool()
-async def get_species_count(name: str) -> int:
-    '''Find the ID of a bird species by name (partial match). Returns the count.'''
-    ret = await Bird.objects.filter(species__icontains=name).afirst()
-    if ret is None:
-        ret = await Bird.objects.acreate(species=name)
-    return ret.count
-
-@mcp.tool()
-async def increment_species(name: str, amount: int = 1) -> int:
-    '''
-    Increment the count of a bird species by a specified amount.
-    Returns the new count.
-    '''
-    ret = await Bird.objects.filter(species__icontains=name).afirst()
-    if ret is None:
-        ret = await Bird.objects.acreate(species=name)
-    ret.count += amount
-    await ret.asave()
-    return ret.count
-```
-
-⚠️ **Important**:
-
-1. Always use **Django's async ORM API** when you define async tools.
-2. Be careful not to return a QuerySet as it will be evaluated asynchroniously which would create errors.
-
-### Customize the default MCP server settings
-
-In `settings.py` you can initialize the `DJANGO_MCP_GLOBAL_SERVER_CONFIG` parameter. These will be
-passed to the `MCPServer` server during initialization
-
-```python
-DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
-    "name":"mymcp",
-    "instructions": "Some instructions to use this server",
-    "stateless": False
 }
 ```
 
-### Session management
+That's it! You can now start the server and connect to it from the Claude Desktop app.
 
-By default the server is statefull, and state is managed as [Django session](https://docs.djangoproject.com/en/5.2/topics/http/sessions/)
-`request.session` object, so the session backend must thus be set up correctly. The
-request object is available in `self.request` for class based toolsets.
+> [!Note]
+> The path should be the absolute path of your Python virtual environment and the `manage.py` file of your Django project.
 
-**NOTE** The session middleware is not required to be set up as MCP sessions are managed
-independently and without cookies.
-.
-You can make the server stateless by defining : `DJANGO_MCP_GLOBAL_SERVER_CONFIG`
 
-**IMPORTANT** state is managed by django sessions, if you use low level `@mcp_server.tool()` annotation for example
-the behaviour of preserving the server instance accross calls of the base python API is not preserved due to architecture
-of django in WSGI deployments where requests can be served by different threads !
+## ❌ Authentication and Authorization
 
-### Authorization
+> [!Important]
+> DRF's authentication and authorization are completely disabled in the Django MCP server.
+> Authentication and authorization should be handled using Oauth2 or any other method in the client.
 
-The MCP endpoint supports [Django Rest Framework authorization classes](https://www.django-rest-framework.org/api-guide/authentication/)
-You can set them using `DJANGO_MCP_AUTHENTICATION_CLASSES` in `settings.py` ex. :
+Django MCP Plus supports [DRF's authentication and authorization system](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/) although they are disabled by default.
 
-```python
-DJANGO_MCP_AUTHENTICATION_CLASSES=["rest_framework.authentication.TokenAuthentication"]
-```
+You can enable them with `DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES`.
 
-**IMPORTANT** Now the [MCP Specification version 2025-03-26](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)
-advices to use an OAuth2 workflow, so you should integrate
-[django-oauth-toolkit with djangorestframework integration](https://django-oauth-toolkit.readthedocs.io/en/latest/rest-framework/getting_started.html)
-setup, and use `'oauth2_provider.contrib.rest_framework.OAuth2Authentication'` in
-`DJANGO_MCP_AUTHENTICATION_CLASSES`. Refer to [the official documentation of django-oauth-toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/rest-framework/getting_started.html)
+## ⚙️ Configuration
 
-### Advanced / customized setup of the view
-
-You can in your urls.py mount the MCPServerStreamableHttpView.as_view() view and customize it with any extra parameters.
-
-### Custom output format (renderers) for ModelQueryToolset
-
-You can define any [DRF rendrer](https://www.django-rest-framework.org/api-guide/renderers/) to produce output, for this
-it must be declared in your settings:
+Here are the main configuration options for the Django MCP server for your `settings.py` file:
 
 ```python
-DJANGO_MCP_OUTPUT_RENDERER_CLASSES = [
-    "rest_framework.renderers.JSONRenderer",
-    "rest_framework_csv.renderers.CSVRenderer"
-]
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    'name': 'django_mcp_server',  # The name of the server. This will be used to identify the server in the client.
+    'instructions': 'This is a Django MCP server.',  # Instructions for the server. This will be shown to the client.
+    'stateless': True,  # Whether the server is stateless or not. If True, the server will not store any state between requests.
+}
+
+DJANGO_MCP_PLUS_ENDPOINT = 'mcp' # The endpoint for the server. This will be used to access the server from the client.
+
+DJANGO_MCP_PLUS_AUTHENTICATION_CLASSES = [] # The authentication classes for the server. This will be used to authenticate the client. If empty, no authentication will be required.
+
+DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL = "" # The tool that will be used to get the server instructions. This will be used to get the instructions for the server from the client. If empty, the instructions will be taken from the `DJANGO_MCP_GLOBAL_SERVER_CONFIG` setting.
+
+DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES = [] # The output renderer classes for the server. This will be used to render the output of the tools. If empty, the default renderer will be used.
 ```
 
-Then in your `ModelQueryToolset` declaration you can add
+**DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES**
 
-```python
-    ...
-    output_format="csv"
+By default DRF's `JSONRenderer` is used to render the output of the tools. You can specify your own renderer classes to customize the output format.
+
+> [!Note]
+> State is managed by [Django session](https://docs.djangoproject.com/en/6.0/topics/http/sessions/) which are saved on the `request.session` object.
+> Ensure that your Django project is configured to use the session backend correctly.
+
+> [!Note]
+> The session middleware is not required for the Django MCP server to work.
+
+## 🧪 Testing
+
+You can use the commands to run the tests for the Django MCP server:
+
+```bash
+# List all the toolsets that are available in the server.
+python manage.py list_toolsets
+
+# Shows alls the tools, resources and prompts that are available in the server.
+python manage.py mcp_inspect
 ```
 
-further you can instruct the tool to attach the result as an [MCP Embedded Resource] rather than direct return with
-
-```python
-    ...
-    output_as_resource=True
-```
-
-*NOTE* some renderers like `drf-excel` are designed in a way that does not allow using them outside of DRF View, they will not
-work here..
-
-### Secondary MCP endpoint
-
-in `mcp.py`
-
-```python
-from mcp_server.djangomcp import DjangoMCP
-
-second_mcp = DjangoMCP(name="altserver")
-
-@second_mcp.tool()
-async def my_tool():
-    ...
-```
-
-in urls.py
-
-```python
-...
-from yourapp.mcp import second_mcp
-...
-path("altmcp", MCPServerStreamableHttpView.as_view(mcp_server=second_mcp))
-...
-```
-
-**IMPORTANT** When you do this the DJANGO_MCP_AUTHENTICATION_CLASSES settings is **ignored** and
-your view is unsecure. You **SHOULD** [Setup DRF Authentication](https://www.django-rest-framework.org/api-guide/authentication/)
-for your view, for exemple :
-
-```python
-...
-MCPServerStreamableHttpView.as_view(permission_classes=[IsAuthenticated], authentication_classes=[TokenAuthentication])
-...
-```
-
-## Testing
-
-### The server
-
-You can setup you own app or use the [mcpexample django app](examples/mcpexample) app.
-
-### The client
-
-By default, your MCP Server will be available as a
-[stateless streamable http transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http)
-endpoint at <your_django_server>/mcp (ex. http://localhost:8000/mcp) (*without / at the end !).
-
-There are many ways to test :
-
-1. Using the test [MCP Client script : test/test_mcp_client.py](test/test_mcp_client.py)
-2. You can test using [MCP Inspector tool](https://github.com/modelcontextprotocol/inspector)
-3. or any compatible MCP Client like google agent developement kit.
-
----
-
-## Integration with Agentic Frameworks and MCP Clients
-
-### Google Agent Developement Kit Example
-
-**NOTE** as of today the [official google adk does not support StreamableHTTP Transport](https://github.com/google/adk-python/issues/479)
-but you could use [this fork](https://github.com/omarbenhamid/google-adk-python)
-
-Then you can use the [test agent in test/test_agent](test/test_agent/agent.py) with by
-starting `adk web` in the `test` folder. Make sure first :
-
-1. Install adk with streamablehttp support : `pip install git+https://github.com/omarbenhamid/google-adk-python.git`
-2. Start a django app with an MCP endpoint : `python manage.py runserver` in the `examples/mcpexample` folder.
-3. If you use TokenAuthorization create an access token, for example in Django Admin of your app.
-4. Setup in `test/test_agent/agent.py` the right endpoint location and authentication header
-5. Enter the `test` folder.
-6. Run `adk web`
-7. In the shell you can for example use this prompt : "I saw woody woodpecker, add it to my inventory"
-
-### Other clients
-
-You can easily plug your MCP server endpoint into any agentic framework supporting MCP streamable http servers.
-Refer to this [list of clients](https://modelcontextprotocol.io/clients)
-
----
-
-## Settings
-
-- **DJANGO_MCP_GLOBAL_SERVER_CONFIG** a configuration dictionnary for the global MCP server default to empty. It can include the following parmaters
-
-  - name: a  name for the server
-  - instructions: global instructions
-  - stateless : when set to 'True' the server will not manage sessions
-- **DJANGO_MCP_AUTHENTICATION_CLASSES** (default to no authentication) a list of reference to Django Rest Framework authentication classes to enfors in the main MCP view.
-- **DJANGO_MCP_GET_SERVER_INSTRUCTIONS_TOOL** (default=True) if true a tool will be offered to obtain global instruction and tools will instruct the agent to use it, as agents do not always have the MCP server global instructions included in their system prompt.
-- **DJANGO_MCP_ENDPOINT** (default="mcp") a string indicating the url endpoint used by the server. If you want it to have a trailing slash, for example, set it to "mcp/"
-
-## Roadmap
-
-- ✅ **Stateless streamable HTTP transport** (implemented)
-- 🔜 **STDIO transport integration for dev configuration (ex. Claude Desktop)**
-- 🔜 ****
-- 🔜 **Stateful streamable HTTP transport using Django sessions**
-- 🔜 **SSE endpoint integration (requires ASGI)**
-- 🔜 **Improved error management and logging**
-
----
-
-## Issues
+## 📝 Issues
 
 If you encounter bugs or have feature requests, please open an issue on [GitHub Issues](https://github.com/omarbenhamid/django-mcp-server/issues).
 
----
 
-## License
+## 📝 Contributing
 
-MIT License.
+We welcome contributions to Django MCP Plus! If you would like to contribute, please follow these steps:
+
+1. Fork the repository on GitHub.
+2. Clone your fork to your local machine.
+3. Create a new branch for your changes.
+4. Make your changes and commit them.
+5. Push your changes to your fork.
+6. Open a pull request on GitHub.
