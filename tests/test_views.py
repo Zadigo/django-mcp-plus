@@ -34,48 +34,48 @@ def request_context():
         yield mock_context
 
 
-class SimpleAPIView(ListAPIView):
-    def get(self, request):
-        return Response({"message": "Hello, World!"})
-
-
 def test_drf_list_view_tool(server, request_context):
+    class SimpleAPIView(ListAPIView):
+        def get(self, request):
+            return Response({"message": "Hello, World!"})
+        
     view_tool = DrfListViewTool(server, SimpleAPIView)
 
     response_data = view_tool()
     assert response_data == {'message': 'Hello, World!'}
 
 
-class SimpleCreateApiView(CreateAPIView):
-    def post(self, request):
-        return Response({"message": "Hello, World!"})
-
-
 def test_drf_create_view_tool(server, request_context):
+    class SimpleCreateApiView(CreateAPIView):
+        def post(self, request):
+            return Response({"message": "Hello, World!"})
+        
     view_tool = DrfCreateViewTool(server, SimpleCreateApiView)
 
     response_data = view_tool({"data": {"key": "value"}})
     assert response_data == {'message': 'Hello, World!'}
 
 
-class SimpleUpdateApiView(UpdateAPIView):
-    def put(self, request, *args, **kwargs):
-        return Response({"message": "Hello, World!"})
 
 
 def test_drf_update_view_tool(server, request_context):
+    class SimpleUpdateApiView(UpdateAPIView):
+        def put(self, request, *args, **kwargs):
+            return Response({"message": "Hello, World!"})
+
     view_tool = DrfUpdateViewTool(server, SimpleUpdateApiView)
 
     response_data = view_tool(1, {"data": {"key": "value"}})
     assert response_data == {'message': 'Hello, World!'}
 
 
-class SimpleDeleteApiView(DestroyAPIView):
-    def delete(self, request, *args, **kwargs):
-        return Response({"message": "Hello, World!"})
 
 
 def test_drf_delete_view_tool(server, request_context):
+    class SimpleDeleteApiView(DestroyAPIView):
+        def delete(self, request, *args, **kwargs):
+            return Response({"message": "Hello, World!"})
+
     view_tool = DrfDeleteViewTool(server, SimpleDeleteApiView)
 
     response_data = view_tool(1)

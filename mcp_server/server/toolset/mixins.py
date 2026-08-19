@@ -158,6 +158,12 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
         self.context = context
         self.request = request
 
+    def __repr__(self):
+        model_name = ''
+        if self.model is not None:
+            model_name = self.model._meta.model_name
+        return f'<{self.__class__.__name__} for {model_name}>'
+
     @classmethod
     def has_model(cls):
         """Returns True if the toolset has a model defined, False otherwise."""
@@ -165,7 +171,10 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
 
     @classmethod
     def get_exclude_fields(cls):
-        if hasattr(cls, '_exclude_fields'):
+        # if hasattr(cls, '_exclude_fields'):
+        #     return cls._exclude_fields
+
+        if cls._exclude_fields:
             return cls._exclude_fields
 
         cls._exclude_fields: set[str] = set()
@@ -182,7 +191,10 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
     
     @classmethod
     def get_published_models(cls):
-        if hasattr(cls, '_published_models'):
+        # if hasattr(cls, '_published_models'):
+        #     return cls._published_models
+
+        if cls._published_models:
             return cls._published_models
         
         cls._published_models: set[type[Model]] = set()
@@ -198,7 +210,10 @@ class ModelQueryToolset(metaclass=ModelQueryRegistry):
 
     @classmethod
     def get_search_fields(cls):
-        if hasattr(cls, '_text_search_fields'):
+        # if hasattr(cls, '_text_search_fields'):
+        #     return cls._text_search_fields
+        
+        if cls._text_search_fields:
             return cls._text_search_fields
 
         cls._text_search_fields: set[str] = set()

@@ -129,9 +129,9 @@ class ViewMixin[T = APIView]:
         # headers = getattr(context, 'headers', None) if context is not None else None
         # wrapped_request = RequestWrapper(self.server, resolve_request_from_headers(headers), 'GET')
         # return self.view(wrapped_request).data
-
+    
         mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
-        wrapped_request = RequestWrapper(self.server, mcp_request, method, **(wrapper_kwargs | {}))
+        wrapped_request = RequestWrapper(self.server, mcp_request, method, **(wrapper_kwargs or {}))
         return self.view(wrapped_request, **(view_kwargs or {})).data
 
 
@@ -176,7 +176,7 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
 
     def __call__(self, id: int, body: dict):
         view_params = {(self.view.view_class.lookup_url_kwarg or self.view.view_class.lookup_field): id}
-        return self.call_view_with_params('PUT', view_kwargs=view_params, wrapper_kwargs={'id': id, 'body': body})
+        return self.call_view_with_params('PUT', view_kwargs=view_params, wrapper_kwargs={'id': id, 'body_json': body})
         
         # mcp_request = DJANGO_REQUEST_CONTEXT.get(SimpleNamespace())
         # request = RequestWrapper(self.server, mcp_request, 'PUT', id=id, body_json=body)

@@ -153,6 +153,7 @@ class QueryTool:
                 f"Output format '{model_toolset.output_format}' is not supported. "
                 f"Supported formats are: {list(_OUTPUT_FORMATS.keys())}"
             )
+        logger.info(f'Google Fashion {model_toolset}')
         self._models[model_toolset.model._meta.model_name] = model_toolset
 
     def get_instructions(self):

@@ -59,8 +59,9 @@ def apply_json_mango_query(queryset: QuerySet, pipeline: list[dict], allowed_mod
 
     if allowed_models:
         allowed_models = [
-            model.lower() if isinstance(model, str) else model._meta.model_name.lower()  
-                for model in allowed_models
+            model.lower() 
+                if isinstance(model, str) else model._meta.model_name.lower()  
+                    for model in allowed_models
             ]
 
     model = queryset.model

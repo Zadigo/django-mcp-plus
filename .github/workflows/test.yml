@@ -36,21 +36,4 @@ jobs:
           pip install uvicorn
           uvicorn --version
       - name: Run tests
-        run: pytest tests/
-      - name: Save build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-artifacts-${{ matrix.python }}
-          retention-days: 1
-          path: .
-
-  checks:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
-        with:
-          name: test-artifacts-${{ matrix.python }}
-          path: .
+        run: pytest --tab=short -rapP --durations=10 --reuse-db tests/
