@@ -50,10 +50,10 @@ class RequestWrapper(HttpRequest):
             case _:
                 raise ValueError(f"Unsupported HTTP method: {method}")
 
-        if mcp_request.user:
+        if getattr(mcp_request, 'user', None):
             request.user = mcp_request.user
-
-        if mcp_request.session:
+            
+        if getattr(mcp_request, 'session', None):
             request.session = mcp_request.session
 
         return request

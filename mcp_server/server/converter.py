@@ -64,19 +64,15 @@ async def convert_to_starlette_request(request: HttpRequest, session_manager: St
         elif message['type'] == 'http.response.body':
             response_body.extend(message.get('body', b''))
 
+    # Call transport
     async with session_manager.run():
-        # Call transport
         await session_manager.handle_request(scope, receive, send)
 
     # Build Django HttpResponse
     status = response_started.get('status', 500)
     headers = response_started.get('headers', {})
 
-    response = HttpResponse(
-        bytes(response_body),
-        status=status,
-    )
-
+    response = HttpResponse(bytes(response_body), status=status)
     for key, value in headers.items():
         response[key] = value
 

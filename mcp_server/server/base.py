@@ -59,6 +59,8 @@ class DjangoMcpServer(MCPServer):
 
     def _handle_request(self, request: HttpRequest) -> HttpResponse:
         if not self.stateless:
+            # Some requests may not have a session (e.g., when initializing 
+            # a new session), so we need to handle that case.
             session_key = request.headers.get(MCP_SESSION_ID_HDR)
             if session_key:
                 store = self.session_store(session_key=session_key)
@@ -72,11 +74,12 @@ class DjangoMcpServer(MCPServer):
                 return HttpResponse(status=400, content="Session required for stateful server")
 
         result = async_to_sync(convert_to_starlette_request)(request, self.session_manager)
-        if not self.stateless and hasattr(request, "session"):
+        if not self.stateless and hasattr(request, 'session'):
             request.session.save()
             result.headers[MCP_SESSION_ID_HDR] = request.session.session_key
-            # Clean up the session attribute to avoid potential issues 
-            # with Django's request lifecycle
+            # Clean up the session attribute to 
+            # avoid potential issues with Django's 
+            # request lifecycle
             delattr(request, 'session')
 
         return result
@@ -101,7 +104,7 @@ class DjangoMcpServer(MCPServer):
                 func = getattr(schema_generator, 'map_serializer', None)
                 if func is not None:
                     func(view_instance.get_serializer())
-                    
+
                 # tool.parameters['properties']['body'] = schema_generator.map_serializer(
                 #     view_instance.get_serializer(),  # Safer than calling serializer_class() directly
                 #     # 'response'
