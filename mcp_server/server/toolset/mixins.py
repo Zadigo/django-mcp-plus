@@ -9,7 +9,6 @@ from mcp import Tool
 from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
-from mcp_server.server.base import DJANGO_MCP_SERVER
 from mcp_server.server.toolset.methods import ToolsetMethodCaller
 from mcp_server.typings import TypeDjangoMcpServer
 
@@ -55,6 +54,7 @@ class McpMethodsToolset(metaclass=ToolsetRegistry):
     server: ClassVar[TypeDjangoMcpServer] = None
 
     def __init__(self, context: Context | None = None, request: HttpRequest | None = None):
+        from mcp_server.server.base import DJANGO_MCP_SERVER
         
         self.context = context
         self.request = request

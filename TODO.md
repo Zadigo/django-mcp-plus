@@ -14,4 +14,6 @@ python /path/to/django-mcp-plus/tests/e2e/test_mcp_client.py
 # MCP inspector
 
 npx @modelcontextprotocol/inspector uv --directory /Volumes/Coding/Projects/Open-Source/django-mcp-plus/.venv/bin run /Volumes/Coding/Projects/Open-Source/django-mcp-plus/manage.py stdio_server
+
+npx @modelcontextprotocol/inspector uv --directory /Volumes/Coding/Projects/Open-Source/django-mcp-plus/.venv/bin run /Volumes/Coding/Projects/Open-Source/django-mcp-plus/examples/mcpexample/manage.py stdio_server
 ```

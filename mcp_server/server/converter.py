@@ -7,8 +7,6 @@ from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from starlette.datastructures import Headers
 from starlette.types import Receive, Scope, Send
 
-from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
-
 
 async def convert_to_starlette_request(request: HttpRequest, session_manager: StreamableHTTPSessionManager) -> HttpResponse:
     """Convert a Django HttpRequest to a Starlette request and return a Django HttpResponse.
@@ -20,6 +18,8 @@ async def convert_to_starlette_request(request: HttpRequest, session_manager: St
     Returns:
         HttpResponse: The Django HttpResponse object.
     """
+    from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
+
     DJANGO_REQUEST_CONTEXT.set(request)
     body = json.dumps(request.data, cls=DjangoJSONEncoder).encode('utf-8')
 

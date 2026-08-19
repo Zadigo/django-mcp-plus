@@ -4,6 +4,8 @@ from rest_framework.generics import (
     CreateAPIView,
     DestroyAPIView,
     ListAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
     UpdateAPIView,
 )
 from rest_framework.serializers import Serializer
@@ -134,6 +136,58 @@ def mcp_publish_delete(*args: type[DestroyAPIView], name: str | None = None, ins
     from mcp_server.server.base import DJANGO_MCP_SERVER
 
     def wrapper(view_class: type[DestroyAPIView]):
+        _server = server or DJANGO_MCP_SERVER
+        _server.register_drf_delete_tool(
+            view_class,
+            name=name,
+            instructions=instructions,
+            actions=actions,
+        )
+        return view_class
+
+    if len(args) == 1 and isinstance(args[0], type):
+        return wrapper(args[0])
+
+    return wrapper
+
+
+def mcp_publish_retrieve_update(*args: type[RetrieveUpdateAPIView], name: str | None = None, instructions: str | None = None, server: TypeDjangoMcpServer | None = None, actions: dict | None = None):
+    """A decorator that can be used to mark a view that uses
+    Django REST Framework's DeleteAPIView as a view that should 
+    be published to the MCP. This decorator should be applied to the 
+    view class after Django REST Framework's DeleteAPIView."""
+    if len(args) < 1:
+        raise ValueError("A view class must be provided to the mcp_publish_delete decorator.")
+
+    from mcp_server.server.base import DJANGO_MCP_SERVER
+
+    def wrapper(view_class: type[RetrieveUpdateAPIView]):
+        _server = server or DJANGO_MCP_SERVER
+        _server.register_drf_delete_tool(
+            view_class,
+            name=name,
+            instructions=instructions,
+            actions=actions,
+        )
+        return view_class
+
+    if len(args) == 1 and isinstance(args[0], type):
+        return wrapper(args[0])
+
+    return wrapper
+
+
+def mcp_publish_retrieve_update_destroy(*args: type[RetrieveUpdateDestroyAPIView], name: str | None = None, instructions: str | None = None, server: TypeDjangoMcpServer | None = None, actions: dict | None = None):
+    """A decorator that can be used to mark a view that uses
+    Django REST Framework's DeleteAPIView as a view that should 
+    be published to the MCP. This decorator should be applied to the 
+    view class after Django REST Framework's DeleteAPIView."""
+    if len(args) < 1:
+        raise ValueError("A view class must be provided to the mcp_publish_delete decorator.")
+
+    from mcp_server.server.base import DJANGO_MCP_SERVER
+
+    def wrapper(view_class: type[RetrieveUpdateDestroyAPIView]):
         _server = server or DJANGO_MCP_SERVER
         _server.register_drf_delete_tool(
             view_class,

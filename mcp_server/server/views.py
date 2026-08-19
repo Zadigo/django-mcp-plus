@@ -12,6 +12,7 @@ from rest_framework.generics import (
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
+from mcp_server.exceptions import ViewClassSubclassError
 from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
 from mcp_server.typings import TypeDjangoMcpServer
 
@@ -108,14 +109,14 @@ class ViewMixin:
 class DrfListViewTool(ViewMixin, BaseApiViewTool[ListAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[ListAPIView], actions: dict | None = None):
         if not issubclass(view_class, ListAPIView):
-            raise TypeError("view_class must be a subclass of ListAPIView")
+            raise ViewClassSubclassError(view_class, ListAPIView)
         super().__init__(server, view_class, actions=actions) 
 
 
 class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[CreateAPIView], actions: dict | None = None):
         if not issubclass(view_class, CreateAPIView):
-            raise TypeError("view_class must be a subclass of CreateAPIView")
+            raise ViewClassSubclassError(view_class, CreateAPIView)
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, body: dict):
@@ -128,14 +129,14 @@ class DrfCreateViewTool(ViewMixin, BaseApiViewTool[CreateAPIView]):
 class DrfRetrieveViewTool(ViewMixin, BaseApiViewTool[RetrieveAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[RetrieveAPIView], actions: dict | None = None):
         if not issubclass(view_class, RetrieveAPIView):
-            raise TypeError("view_class must be a subclass of RetrieveAPIView")
+            raise ViewClassSubclassError(view_class, RetrieveAPIView)
         super().__init__(server, view_class, actions=actions)
 
 
 class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[UpdateAPIView], actions: dict | None = None):
         if not issubclass(view_class, UpdateAPIView):
-            raise TypeError("view_class must be a subclass of UpdateAPIView")
+            raise ViewClassSubclassError(view_class, UpdateAPIView)
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int, body: dict):
@@ -147,7 +148,7 @@ class DrfUpdateViewTool(ViewMixin, BaseApiViewTool[UpdateAPIView]):
 class DrfDeleteViewTool(ViewMixin, BaseApiViewTool[DestroyAPIView]):
     def __init__(self, server: TypeDjangoMcpServer, view_class: type[DestroyAPIView], actions: dict | None = None):
         if not issubclass(view_class, DestroyAPIView):
-            raise TypeError("view_class must be a subclass of DestroyAPIView")
+            raise ViewClassSubclassError(view_class, DestroyAPIView)
         super().__init__(server, view_class, actions=actions)
 
     def __call__(self, id: int):
