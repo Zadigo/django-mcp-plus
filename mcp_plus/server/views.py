@@ -13,11 +13,11 @@ from rest_framework.generics import (
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
-from mcp_server.exceptions import ViewClassSubclassError
+from mcp_plus.exceptions import ViewClassSubclassError
 
 # from mcp_server.server.session_authentication import resolve_request_from_headers
-from mcp_server.server.toolset.methods import DJANGO_REQUEST_CONTEXT
-from mcp_server.typings import TypeDjangoMcpServer
+from mcp_plus.server.toolset.methods import DJANGO_REQUEST_CONTEXT
+from mcp_plus.typings import TypeDjangoMcpServer
 
 
 class RequestWrapper(HttpRequest):

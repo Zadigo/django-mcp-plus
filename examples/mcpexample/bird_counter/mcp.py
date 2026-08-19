@@ -1,16 +1,16 @@
 from django.db.models import QuerySet
 
 # For more advanced low level usage, you can use the mcp_server directly
-from mcp_server import mcp_server as mcp
-from mcp_server.decorators import (
+from mcp_plus import mcp_server as mcp
+from mcp_plus.decorators import (
     mcp_publish_create,
     mcp_publish_delete,
     mcp_publish_list,
     mcp_publish_update,
     serialize,
 )
-from mcp_server.server.base import DjangoMcpServer
-from mcp_server.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
+from mcp_plus.server.base import DjangoMcpServer
+from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 from .models import Bird, City, Location
 from .serializers import BirdSerializer

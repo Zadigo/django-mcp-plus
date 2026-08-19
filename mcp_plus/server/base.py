@@ -9,15 +9,15 @@ from mcp.server import MCPServer
 from mcp.server.mcpserver.tools import Tool
 from rest_framework.views import APIView
 
-from mcp_server.server.converter import convert_to_starlette_request
-from mcp_server.server.views import (
+from mcp_plus.server.converter import convert_to_starlette_request
+from mcp_plus.server.views import (
     DrfCreateViewTool,
     DrfDeleteViewTool,
     DrfListViewTool,
     DrfRetrieveViewTool,
     DrfUpdateViewTool,
 )
-from mcp_server.typings import TypeToolset
+from mcp_plus.typings import TypeToolset
 
 logger = logging.getLogger(__name__)
 

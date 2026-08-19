@@ -9,7 +9,7 @@ from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
 from rest_framework.serializers import Serializer
 
-from mcp_server.typings import (
+from mcp_plus.typings import (
     TypeMcpToolset,
     TypeToolsetMethod,
     TypeToolsetMethodReturn,

@@ -5,8 +5,8 @@ import pydantic
 from django.db.models import Model, QuerySet
 
 if TYPE_CHECKING:
-    from mcp_server.server.base import DjangoMcpServer
-    from mcp_server.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
+    from mcp_plus.server.base import DjangoMcpServer
+    from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 
 type TypeDjangoMcpServer = 'DjangoMcpServer'

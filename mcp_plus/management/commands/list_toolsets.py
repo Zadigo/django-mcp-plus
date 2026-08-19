@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from mcp_server.management.utils import Tabs
-from mcp_server.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
+from mcp_plus.management.utils import Tabs
+from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 
 class Command(BaseCommand):

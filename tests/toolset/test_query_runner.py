@@ -1,6 +1,6 @@
 import pytest
 
-from mcp_server.server.toolset.queries import QueryRunner
+from mcp_plus.server.toolset.queries import QueryRunner
 
 
 @pytest.mark.django_db

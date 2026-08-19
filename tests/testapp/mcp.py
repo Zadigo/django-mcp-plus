@@ -16,14 +16,14 @@ from rest_framework.generics import (
 )
 from rest_framework.serializers import Serializer
 
-from mcp_server.decorators import (
+from mcp_plus.decorators import (
     mcp_publish_create,
     mcp_publish_delete,
     mcp_publish_list,
     serialize,
 )
-from mcp_server.server.base import DJANGO_MCP_SERVER
-from mcp_server.server.toolset import McpMethodsToolset, ModelQueryToolset
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.toolset import McpMethodsToolset, ModelQueryToolset
 from tests.testapp.models import SimpleModel
 
 logger = logging.getLogger(__name__)

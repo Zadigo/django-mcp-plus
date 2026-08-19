@@ -1,7 +1,7 @@
 from django.test import override_settings
 
-from mcp_server.server.discovery import initialize_query_tools, initialize_toolsets
-from mcp_server.server.toolset.queries import _OUTPUT_FORMATS
+from mcp_plus.server.discovery import initialize_query_tools, initialize_toolsets
+from mcp_plus.server.toolset.queries import _OUTPUT_FORMATS
 
 
 def test_initialize_query_tools_loading():

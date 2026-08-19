@@ -51,7 +51,7 @@ def pytest_configure(config):
 
 @pytest.fixture
 def model_query_toolset():
-    from mcp_server.server.toolset.mixins import ModelQueryToolset
+    from mcp_plus.server.toolset.mixins import ModelQueryToolset
     from tests.testapp.models import SimpleModel
 
     class SimpleQueryToolset(ModelQueryToolset):
@@ -65,7 +65,7 @@ def model_query_toolset():
 
 @pytest.fixture
 def methods_toolset():
-    from mcp_server.server.toolset.mixins import McpMethodsToolset
+    from mcp_plus.server.toolset.mixins import McpMethodsToolset
 
     class SimpleMethodToolset(McpMethodsToolset):
         def simple_method(self, arg1:int , arg2: int):
@@ -76,7 +76,7 @@ def methods_toolset():
 
 @pytest.fixture
 def async_methods_toolset():
-    from mcp_server.server.toolset.mixins import McpMethodsToolset
+    from mcp_plus.server.toolset.mixins import McpMethodsToolset
 
     class SimpleMethodsToolset(McpMethodsToolset):
         async def simple_method(self, arg1:int , arg2: int):

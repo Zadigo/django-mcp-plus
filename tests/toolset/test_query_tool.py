@@ -2,8 +2,8 @@ import pytest
 from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
-from mcp_server.server.toolset.mixins import ModelQueryToolset
-from mcp_server.server.toolset.queries import QueryRunner, QueryTool
+from mcp_plus.server.toolset.mixins import ModelQueryToolset
+from mcp_plus.server.toolset.queries import QueryRunner, QueryTool
 
 
 def test_add_model_toolset(model_query_toolset):

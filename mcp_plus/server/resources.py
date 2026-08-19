@@ -13,7 +13,7 @@ from mcp.types import (
     ResourceTemplateReference,
 )
 
-from mcp_server.typings import TypeDjangoMcpServer
+from mcp_plus.typings import TypeDjangoMcpServer
 
 
 class ResourceManager(type):

@@ -1,7 +1,7 @@
 import pytest
 
-from mcp_server.server.toolset.schema import mangodb_query
-from mcp_server.server.toolset.schema.old_mango import apply_json_mango_query
+from mcp_plus.server.toolset.schema import mangodb_query
+from mcp_plus.server.toolset.schema.old_mango import apply_json_mango_query
 from tests.toolset.constants import SEARCH_PIPELINE
 
 PIPELINES = pytest.mark.parametrize(

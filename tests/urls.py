@@ -5,7 +5,7 @@ from django.utils.module_loading import import_string
 from oauth2_provider import urls as oauth2_urls
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from mcp_server.views import StreamableHttpView
+from mcp_plus.views import StreamableHttpView
 
 base_url = getattr(settings, 'DJANGO_MCP_PLUS_ENDPOINT', 'mcp')
 

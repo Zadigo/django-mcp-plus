@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.http.request import HttpRequest
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 
-from mcp_server.server.converter import convert_to_starlette_request
+from mcp_plus.server.converter import convert_to_starlette_request
 
 
 @pytest.fixture

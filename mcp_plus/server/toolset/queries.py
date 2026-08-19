@@ -16,10 +16,10 @@ from mcp.types import (
 from mcp_types import TextContent
 from rest_framework.renderers import BaseRenderer
 
-from mcp_server.server.base import DJANGO_MCP_SERVER
-from mcp_server.server.toolset.mixins import ModelQueryRegistry
-from mcp_server.server.toolset.schema.old_mango import apply_json_mango_query
-from mcp_server.typings import TypeDjangoMcpServer, TypeModelQueryToolset
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.toolset.mixins import ModelQueryRegistry
+from mcp_plus.server.toolset.schema.old_mango import apply_json_mango_query
+from mcp_plus.typings import TypeDjangoMcpServer, TypeModelQueryToolset
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +206,7 @@ class QueryTool:
         return QueryRunner(self._models, context=context, request=request)
 
     def _add_tools_to(self, manager: ToolManager):
-        from mcp_server.server.toolset.methods import ToolsetMethodCaller
+        from mcp_plus.server.toolset.methods import ToolsetMethodCaller
         
         def dummy(collection: str, search_pipeline: list[dict] | None = None):
             pass

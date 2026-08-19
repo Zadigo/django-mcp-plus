@@ -9,8 +9,8 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 
-from mcp_server.server.base import DjangoMcpServer
-from mcp_server.server.views import (
+from mcp_plus.server.base import DjangoMcpServer
+from mcp_plus.server.views import (
     DrfCreateViewTool,
     DrfDeleteViewTool,
     DrfListViewTool,

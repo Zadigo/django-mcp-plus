@@ -2,8 +2,8 @@ from asgiref.sync import async_to_sync
 from django.core.management.base import BaseCommand
 from mcp import Client
 
-from mcp_server.management.utils import Tabs
-from mcp_server.server.base import DJANGO_MCP_SERVER
+from mcp_plus.management.utils import Tabs
+from mcp_plus.server.base import DJANGO_MCP_SERVER
 
 
 class Command(BaseCommand):

@@ -1,7 +1,7 @@
-from mcp_server.server.base import DJANGO_MCP_SERVER
-from mcp_server.server.resources import ResourceManager
-from mcp_server.server.toolset.mixins import ToolsetRegistry
-from mcp_server.server.toolset.queries import (
+from mcp_plus.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.resources import ResourceManager
+from mcp_plus.server.toolset.mixins import ToolsetRegistry
+from mcp_plus.server.toolset.queries import (
     initialize_query_tools,
 )
 

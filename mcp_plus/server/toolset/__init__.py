@@ -1,8 +1,8 @@
-from mcp_server.server.toolset.methods import (
+from mcp_plus.server.toolset.methods import (
     SyncToolsetMethodCaller,
     ToolsetMethodCaller,
 )
-from mcp_server.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
+from mcp_plus.server.toolset.mixins import McpMethodsToolset, ModelQueryToolset
 
 __all__ = [
     'McpMethodsToolset',

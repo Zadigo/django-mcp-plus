@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from mcp_server.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.base import DJANGO_MCP_SERVER
 
 
 class Command(BaseCommand):

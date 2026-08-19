@@ -7,14 +7,14 @@ from rest_framework.generics import (
 )
 from rest_framework.serializers import Serializer
 
-from mcp_server.decorators import (
+from mcp_plus.decorators import (
     mcp_publish_create,
     mcp_publish_delete,
     mcp_publish_list,
     mcp_publish_update,
     serialize,
 )
-from mcp_server.server.toolset.mixins import McpMethodsToolset
+from mcp_plus.server.toolset.mixins import McpMethodsToolset
 
 
 class MySerializer(Serializer):

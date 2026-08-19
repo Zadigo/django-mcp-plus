@@ -3,7 +3,7 @@ from django.urls import path
 from django.utils.module_loading import import_string
 from rest_framework.permissions import IsAuthenticated
 
-from mcp_server.views import StreamableHttpView
+from mcp_plus.views import StreamableHttpView
 
 # Register MCP Server View and bypass default DRF 
 # default permission / authentication classes

@@ -8,7 +8,7 @@ from rest_framework.generics import (
 )
 from rest_framework.serializers import Serializer
 
-from mcp_server.typings import TypeDjangoMcpServer
+from mcp_plus.typings import TypeDjangoMcpServer
 
 
 def serialize(serializer: type[Serializer]):
@@ -35,7 +35,7 @@ def mcp_publish_create(*args: type[CreateAPIView], name: str | None = None, inst
     if len(args) < 1:
         raise ValueError("A view class must be provided to the mcp_publish_create decorator.")
 
-    from mcp_server.server.base import DJANGO_MCP_SERVER
+    from mcp_plus.server.base import DJANGO_MCP_SERVER
 
     def wrapper(view_class: type[CreateAPIView]):
         _server = server or DJANGO_MCP_SERVER
@@ -79,7 +79,7 @@ def mcp_publish_list(*args: type[ListAPIView], name: str | None = None, instruct
     if len(args) < 1:
         raise ValueError("A view class must be provided to the mcp_publish_list decorator.")
 
-    from mcp_server.server.base import DJANGO_MCP_SERVER
+    from mcp_plus.server.base import DJANGO_MCP_SERVER
 
     def wrapper(view_class: type[ListAPIView]):
         _server = server or DJANGO_MCP_SERVER
@@ -105,7 +105,7 @@ def mcp_publish_update(*args: type[UpdateAPIView], name: str | None = None, inst
     if len(args) < 1:
         raise ValueError("A view class must be provided to the mcp_publish_update decorator.")
 
-    from mcp_server.server.base import DJANGO_MCP_SERVER
+    from mcp_plus.server.base import DJANGO_MCP_SERVER
 
     def wrapper(view_class: type[UpdateAPIView]):
         _server = server or DJANGO_MCP_SERVER
@@ -131,7 +131,7 @@ def mcp_publish_delete(*args: type[DestroyAPIView], name: str | None = None, ins
     if len(args) < 1:
         raise ValueError("A view class must be provided to the mcp_publish_delete decorator.")
 
-    from mcp_server.server.base import DJANGO_MCP_SERVER
+    from mcp_plus.server.base import DJANGO_MCP_SERVER
 
     def wrapper(view_class: type[DestroyAPIView]):
         _server = server or DJANGO_MCP_SERVER

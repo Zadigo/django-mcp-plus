@@ -35,7 +35,7 @@ def resolve_request_from_headers(headers: Mapping | None) -> SimpleNamespace:
     use it to look up the authenticated user from durable, shared session
     storage that any thread/task can read.
     """
-    from mcp_server.server.base import DJANGO_MCP_SERVER
+    from mcp_plus.server.base import DJANGO_MCP_SERVER
 
     fallback = SimpleNamespace(user=None, session=None)
 

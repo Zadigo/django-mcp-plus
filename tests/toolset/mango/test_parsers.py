@@ -1,7 +1,7 @@
 import pytest
 from django.db import models
 
-from mcp_server.server.toolset.schema.mango import parse_match, translate_field
+from mcp_plus.server.toolset.schema.mango import parse_match, translate_field
 
 CONDITIONS = pytest.mark.parametrize(
     "testcase,condition",

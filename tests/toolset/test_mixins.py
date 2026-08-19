@@ -1,8 +1,8 @@
 import pytest
 from mcp.server.mcpserver.tools.tool_manager import ToolManager
 
-from mcp_server.server.toolset.methods import ToolsetMethodCaller
-from mcp_server.server.toolset.mixins import McpMethodsToolset, ToolsetRegistry
+from mcp_plus.server.toolset.methods import ToolsetMethodCaller
+from mcp_plus.server.toolset.mixins import McpMethodsToolset, ToolsetRegistry
 
 
 def test_registration(methods_toolset):

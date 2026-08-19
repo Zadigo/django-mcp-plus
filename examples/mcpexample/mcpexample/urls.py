@@ -2,7 +2,7 @@ from bird_counter.mcp import second_mcp
 from django.contrib import admin
 from django.urls import include, path
 
-from mcp_server.views import StreamableHttpView
+from mcp_plus.views import StreamableHttpView
 
 urlpatterns = [
     path("admin/", admin.site.urls),

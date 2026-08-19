@@ -9,7 +9,7 @@ from mcp.types import AudioContent, CallToolResult
 from rest_framework import serializers
 from rest_framework.serializers import Serializer
 
-from mcp_server.server.toolset.methods import (
+from mcp_plus.server.toolset.methods import (
     SyncToolsetMethodCaller,
     ToolsetMethodCaller,
 )

@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 # from oauth2_provider.views.generic import ProtectedResourceView
 from rest_framework.views import APIView
 
-from mcp_server.server.base import DJANGO_MCP_SERVER
+from mcp_plus.server.base import DJANGO_MCP_SERVER
 
 
 class StreamableHttpView(APIView):

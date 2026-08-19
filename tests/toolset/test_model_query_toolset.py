@@ -1,7 +1,7 @@
 import pytest
 from django.db.models.query import QuerySet
 
-from mcp_server.server.toolset.mixins import ModelQueryToolset
+from mcp_plus.server.toolset.mixins import ModelQueryToolset
 from tests.testapp.mcp import SimpleModelToolFromTestApp
 from tests.testapp.models import SimpleModel
 

@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.test import TestCase
 
-from mcp_server import query_tool
+from mcp_plus import query_tool
 
 from .models import Bird, City, Location
 
