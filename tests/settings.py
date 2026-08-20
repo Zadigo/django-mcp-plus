@@ -134,6 +134,12 @@ DJANGO_MCP_PLUS_GET_SERVER_INSTRUCTIONS_TOOL = ""
 
 DJANGO_MCP_PLUS_OUTPUT_RENDERER_CLASSES = []
 
+OAUTH2_PROVIDER = {
+    "OIDC_ENABLED": True,
+    # "OIDC_RSA_PRIVATE_KEY": open("path/to/private.pem").read(),
+    "SCOPES": {"openid": "OpenID Connect scope", "read": "Read scope", "write": "Write scope"},
+}
+
 
 # Cors settings
 

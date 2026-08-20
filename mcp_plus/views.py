@@ -34,7 +34,7 @@ class StreamableHttpView(APIView):
 def oauth_protected_resource_metadata(request: HttpRequest):
     return JsonResponse({
         "resource": request.build_absolute_uri('/mcp'),
-        "authorization_servers": ["https://your-idp.example.com/"],
+        "authorization_servers": ["http://127.0.0.1:8000/o"],
         "scopes_supported": ["read", "write"],
         "bearer_methods_supported": ["header"],
     })

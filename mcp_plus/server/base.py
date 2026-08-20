@@ -68,6 +68,15 @@ class DjangoMcpServer(MCPServer):
         )
 
     def _handle_request(self, request: HttpRequest) -> HttpResponse:
+        token = request.headers.get('Authorization', '').removeprefix('Bearer ').strip()
+        access_token = self.token_verifier.verify_token(token) if token else None
+        if access_token is None:
+            resource_metadata_url = request.build_absolute_uri('/.well-known/oauth-protected-resource')
+            return HttpResponse(
+                status=401,
+                headers={'WWW-Authenticate': f'Bearer resource_metadata="{resource_metadata_url}"'},
+            )
+    
         if not self.stateless:
             # Some requests may not have a session (e.g., when initializing 
             # a new session), so we need to handle that case.
